@@ -1,0 +1,55 @@
+ M README.md
+ M app/(tabs)/_layout.tsx
+ M app/(tabs)/explore.tsx
+ M app/(tabs)/index.tsx
+ M app/_layout.tsx
+ M package-lock.json
+ M package.json
+?? .env
+?? API_INTEGRATION_STRATEGY.md
+?? TESTING_STRATEGY.md
+?? app/(tabs)/buds.tsx
+?? app/(tabs)/chat.tsx
+?? app/(tabs)/profile.tsx
+?? app/BudsScreen.tsx
+?? app/CardsScreen.tsx
+?? app/ChangePassAltScreen.tsx
+?? app/ChangePassScreen.tsx
+?? app/ChatDetailsScreen/
+?? app/ChatScreen.tsx
+?? app/ChatsAltScreen.tsx
+?? app/CollectInfoAlt1Screen.tsx
+?? app/CollectInfoAlt2Screen.tsx
+?? app/CollectInfoAlt3Screen.tsx
+?? app/CollectInfoScreen.tsx
+?? app/DetailsScreen.tsx
+?? app/DiscoverAltScreen.tsx
+?? app/DiscoverScreen.tsx
+?? app/EventScreen.tsx
+?? app/EventsScreen.tsx
+?? app/HomeAltScreen.tsx
+?? app/HomeScreen.tsx
+?? app/IntroductionScreen.tsx
+?? app/LoginScreen.tsx
+?? app/LoginWrongPassScreen.tsx
+?? app/MatchHistoryScreen.tsx
+?? app/MatchingScreen.tsx
+?? app/OnboardingScreen.tsx
+?? app/PlayerScreen.tsx
+?? app/ProfileScreen.tsx
+?? app/ResendEmailAltScreen.tsx
+?? app/ResendEmailScreen.tsx
+?? app/SearchScreen.tsx
+?? app/SignUpAltScreen.tsx
+?? app/SignUpScreen.tsx
+?? app/StoriesScreen.tsx
+?? app/UserProfileAltScreen.tsx
+?? app/UserProfileScreen.tsx
+?? app/UserProfileScreen/
+?? app/WatchPartyScreen.tsx
+?? app/WatchTogetherScreen.tsx
+?? app/index.tsx
+?? assets/ui/
+?? expo_web.log
+?? src/
+?? status.txt

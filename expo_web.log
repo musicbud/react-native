@@ -1,0 +1,42 @@
+
+> musicbud-expo@1.0.0 web
+> expo start --web
+
+env: load .env
+env: export EXPO_PUBLIC_API_BASE_URL
+Starting project at /home/mahmoud/Documents/GitHub/musicbud/musicbud-expo
+React Compiler enabled
+Starting Metro Bundler
+Waiting on http://localhost:8081
+Logs for your project will appear below.
+Web node_modules/expo-router/entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ node_modules/expo-router/node/render.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓░░░░░░░░░░░ 36.0% (18/33)
+λ node_modules/expo-router/node/render.js ▓▓░░░░░░░░░░░░░░ 12.7% (106/298)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 47.5% ( 57/221)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓░░░░░░░░░ 45.8% (367/542)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 47.5% (174/325)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 75.1% (534/616)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 47.5% (348/506)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 78.7% (629/723)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓░░░░░░░░ 54.1% (420/571)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░ 88.2% (711/757)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓░░░░░ 68.9% (623/754)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 95.0% (765/785)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓░░░ 85.1% (751/814)
+λ node_modules/expo-router/node/render.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 95.0% (811/834)
+λ Bundled 27202ms node_modules/expo-router/node/render.js (854 modules)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░ 99.9% (891/891)
+Web Bundled 28699ms node_modules/expo-router/entry.js (891 modules)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓░░░░░░░░░ 45.7% (353/522)
+Web node_modules/expo-router/entry.js ▓▓▓▓▓▓▓▓▓▓▓▓░░░░ 78.3% (693/783)
+Web Bundled 8119ms node_modules/expo-router/entry.js (891 modules)
+ LOG  [web] Logs will appear in the browser console
+Web Bundled 54ms node_modules/expo-router/entry.js (1 module)
+Web node_modules/expo-router/entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ Bundled 48ms node_modules/expo-router/node/render.js (1 module)
+Web Bundled 503ms node_modules/expo-router/entry.js (1 module)
+Web node_modules/expo-router/entry.js ░░░░░░░░░░░░░░░░  0.0% (0/1)
+λ Bundled 51ms node_modules/expo-router/node/render.js (1 module)
+Web Bundled 416ms node_modules/expo-router/entry.js (1 module)
+Web Bundled 63ms node_modules/expo-router/entry.js (1 module)
