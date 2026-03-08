@@ -1,7 +1,13 @@
 import React, { useState } from 'react';
+import { SafeImage } from '../components/common/SafeImage';
 import { View, Text, StyleSheet, Image, Dimensions, ScrollView, TouchableOpacity, FlatList, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useGetGenresQuery, useGetDiscoverContentQuery, useGetTrendingContentQuery } from '../store/api';
+import { DesignSystem } from '../theme/design_system';
+import {
+  usePublicGenresV1DiscoverPublicGenresGetQuery,
+  usePublicDiscoverRootV1DiscoverPublicGetQuery,
+  usePublicTrendingV1DiscoverPublicTrendingGetQuery
+} from '../store/api';
 
 const { width, height } = Dimensions.get('window');
 
@@ -10,9 +16,9 @@ const DiscoverAltScreen = () => {
   const [searchText, setSearchText] = useState('');
 
   // Fetch data using RTK Query
-  const { data: genresData, error: genresError, isLoading: isGenresLoading } = useGetGenresQuery();
-  const { data: discoverContentData, error: discoverContentError, isLoading: isDiscoverContentLoading } = useGetDiscoverContentQuery();
-  const { data: trendingTracksData, error: trendingTracksError, isLoading: isTrendingTracksLoading } = useGetTrendingContentQuery({ type: 'tracks' });
+  const { data: genresWrapper, error: genresError, isLoading: isGenresLoading } = usePublicGenresV1DiscoverPublicGenresGetQuery({});
+  const { data: discoverContentWrapper, error: discoverContentError, isLoading: isDiscoverContentLoading } = usePublicDiscoverRootV1DiscoverPublicGetQuery();
+  const { data: trendingTracksWrapper, error: trendingTracksError, isLoading: isTrendingTracksLoading } = usePublicTrendingV1DiscoverPublicTrendingGetQuery({ contentType: 'tracks' });
 
   // Handle loading and error states
   if (isGenresLoading || isDiscoverContentLoading || isTrendingTracksLoading) {
@@ -36,13 +42,13 @@ const DiscoverAltScreen = () => {
   }
 
   // Extract data (with fallback to empty array if data is null/undefined)
-  const musicGenres = genresData?.data?.music || [];
-  const recommendedPlaylists = discoverContentData?.data?.playlists || []; // Assuming discoverContent returns playlists
-  const recentFavorites = trendingTracksData?.data?.tracks || []; // Using trending tracks as "Recent Favorites"
+  const musicGenres = genresWrapper?.data?.music || [];
+  const recommendedPlaylists = discoverContentWrapper?.data?.playlists || []; // Assuming discoverContent returns playlists
+  const recentFavorites = trendingTracksWrapper?.data?.tracks || []; // Using trending tracks as "Recent Favorites"
 
   const renderPlaylistItem = ({ item }: { item: any }) => (
     <View style={styles.playlistItem}>
-      <Image source={{ uri: item.cover || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.playlistCover} />
+      <SafeImage source={{ uri: item.cover || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.playlistCover} />
       <Text style={styles.playlistTitle}>{item.name}</Text>
       <Text style={styles.playlistArtist}>{item.artist || 'Various Artists'}</Text>
       {/* Assuming a play icon or bookmark for interaction */}
@@ -51,7 +57,7 @@ const DiscoverAltScreen = () => {
 
   const renderFavoriteItem = ({ item }: { item: any }) => (
     <View style={styles.favoriteItem}>
-      <Image source={{ uri: item.cover || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.favoriteCover} />
+      <SafeImage source={{ uri: item.cover || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.favoriteCover} />
       <Text style={styles.favoriteTitle}>{item.name}</Text>
       <Text style={styles.favoriteArtist}>{item.artist || 'Various Artists'}</Text>
     </View>
@@ -65,8 +71,8 @@ const DiscoverAltScreen = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <Image
-        source={{/* require('../../assets/ui/Search/Discover-1.png') */}} // Primary background
+      <SafeImage
+        source={{/* require('../../assets/ui/Search/Discover-1.png') */ }} // Primary background
         style={styles.fullBackgroundImage}
         resizeMode="cover"
       />
@@ -81,7 +87,7 @@ const DiscoverAltScreen = () => {
             placeholderTextColor="#888"
             value={searchText}
             onChangeText={setSearchText}
-            onSubmitEditing={() => router.push(`/Search?q=${searchText}`)}
+            onSubmitEditing={() => router.push(`/Search?q=${searchText}` as any)}
           />
           {/* Add search icon */}
         </View>
@@ -146,27 +152,27 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
   },
   loadingText: {
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 18,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
     padding: 20,
   },
   errorText: {
-    color: 'red',
+    color: DesignSystem.colors.errorRed,
     fontSize: 18,
     textAlign: 'center',
     marginBottom: 10,
   },
   screenTitle: {
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
@@ -177,17 +183,17 @@ const styles = StyleSheet.create({
   },
   searchBarInput: {
     height: 50,
-    backgroundColor: '#333',
+    backgroundColor: DesignSystem.colors.surfaceContainer,
     borderRadius: 10,
     paddingHorizontal: 15,
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 16,
   },
   section: {
     marginBottom: 30,
   },
   sectionTitle: {
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 15,
@@ -203,12 +209,12 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   playlistTitle: {
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 14,
     fontWeight: 'bold',
   },
   playlistArtist: {
-    color: '#888',
+    color: DesignSystem.colors.textMuted,
     fontSize: 12,
   },
   favoriteItem: {
@@ -222,16 +228,16 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   favoriteTitle: {
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 14,
     fontWeight: 'bold',
   },
   favoriteArtist: {
-    color: '#888',
+    color: DesignSystem.colors.textMuted,
     fontSize: 12,
   },
   genreItem: {
-    backgroundColor: 'rgba(50,50,50,0.5)', // Example genre tag color
+    backgroundColor: DesignSystem.colors.surfaceContainerHigh,
     borderRadius: 20,
     paddingVertical: 8,
     paddingHorizontal: 15,
@@ -239,7 +245,7 @@ const styles = StyleSheet.create({
     marginBottom: 10, // For wrapping
   },
   genreText: {
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 14,
     fontWeight: 'bold',
   },

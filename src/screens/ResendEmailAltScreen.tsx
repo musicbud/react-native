@@ -1,4 +1,5 @@
 import React, { useState, useRef } from 'react';
+import { SafeImage } from '../components/common/SafeImage';
 import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, TextInput, Keyboard } from 'react-native';
 import { useRouter } from 'expo-router';
 
@@ -47,8 +48,8 @@ const ResendEmailAltScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Image
-        source={{/* require('../../assets/ui/extra/Resend Email2.png') */}}
+      <SafeImage
+        source={{/* require('../../assets/ui/extra/Resend Email2.png') */ }}
         style={styles.backgroundImage}
         resizeMode="cover"
       />
@@ -64,7 +65,9 @@ const ResendEmailAltScreen = () => {
           {code.map((digit, index) => (
             <TextInput
               key={index}
-              ref={(ref) => (inputRefs.current[index] = ref!)}
+              ref={(ref) => {
+                if (ref) inputRefs.current[index] = ref;
+              }}
               style={styles.codeInput}
               value={digit}
               onChangeText={(text) => handleCodeChange(text, index)}

@@ -1,4 +1,5 @@
 import React from 'react';
+import { SafeImage } from '../components/common/SafeImage';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { usePlayer } from '../context/PlayerContext';
 import { useRouter } from 'expo-router';
@@ -27,7 +28,7 @@ export const MiniPlayer = () => {
             onPress={() => router.push('/PlayerScreen' as any)}
         >
             <View style={styles.content}>
-                <Image
+                <SafeImage
                     source={{ uri: currentTrack.cover_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }}
                     style={styles.cover}
                 />
@@ -62,11 +63,7 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#333',
         overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 4,
-        elevation: 5,
+        boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.3)',
     },
     content: {
         flexDirection: 'row',

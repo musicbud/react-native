@@ -1,20 +1,24 @@
 import React, { useState } from 'react';
+import { SafeImage } from '../components/common/SafeImage';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, ActivityIndicator, StatusBar } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useGetUserProfileQuery, User } from '../store/api';
+import { Ionicons } from '@expo/vector-icons';
+import { useGetUserProfileByIdV1UsersProfileUserIdGetQuery } from '../store/api';
 import { LinearGradient } from 'expo-linear-gradient';
+import { DesignSystem } from '../theme/design_system';
+import { ModernButton } from '../components/common/ModernButton';
 
 const UserProfileScreen = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { data: userProfileData, error: userProfileError, isLoading: isUserProfileLoading } = useGetUserProfileQuery(id as string);
+  const { data: userProfileWrapper, error: userProfileError, isLoading: isUserProfileLoading } = useGetUserProfileByIdV1UsersProfileUserIdGetQuery({ userId: id as string });
   const [activeTab, setActiveTab] = useState('About'); // 'About', 'Interests'
 
   if (isUserProfileLoading) {
     return (
       <View style={styles.loadingContainer}>
         <StatusBar barStyle="light-content" />
-        <ActivityIndicator size="large" color="#1E90FF" />
+        <ActivityIndicator size="large" color={DesignSystem.colors.primaryRed} />
       </View>
     );
   }
@@ -24,14 +28,12 @@ const UserProfileScreen = () => {
       <View style={styles.errorContainer}>
         <StatusBar barStyle="light-content" />
         <Text style={styles.errorText}>Unable to load user profile.</Text>
-        <TouchableOpacity style={styles.retryButton} onPress={() => router.back()}>
-          <Text style={styles.retryButtonText}>Go Back</Text>
-        </TouchableOpacity>
+        <ModernButton text="Go Back" onPressed={() => router.back()} variant="secondary" />
       </View>
     );
   }
 
-  const user: User = userProfileData || {
+  const user: any = (userProfileWrapper as any)?.data || userProfileWrapper || {
     id: 'unknown',
     username: 'unknown',
     email: '',
@@ -45,10 +47,10 @@ const UserProfileScreen = () => {
     <ScrollView style={styles.container}>
       <StatusBar barStyle="light-content" />
       <LinearGradient
-        colors={['rgba(30,30,30,0.9)', '#121212']}
+        colors={[DesignSystem.colors.surfaceContainerHighest, DesignSystem.colors.backgroundPrimary]}
         style={styles.headerGradient}
       >
-        <Image
+        <SafeImage
           source={{ uri: user.avatar_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }}
           style={styles.fullBackgroundImage}
           blurRadius={10}
@@ -56,29 +58,26 @@ const UserProfileScreen = () => {
         <View style={styles.overlay}>
           <View style={styles.header}>
             <TouchableOpacity onPress={() => router.back()} style={styles.iconButton}>
-              <Text style={styles.backButtonText}>←</Text>
+              <Ionicons name="chevron-back" size={22} color={DesignSystem.colors.onSurface} />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Profile</Text>
             <View style={{ width: 40 }} />
           </View>
 
           <View style={styles.profileHeader}>
-            <Image source={{ uri: user.avatar_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.profileImage} />
+            <SafeImage source={{ uri: user.avatar_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.profileImage} />
             <Text style={styles.nameText}>{user.display_name || user.username}</Text>
             <Text style={styles.usernameText}>@{user.username}</Text>
             {user.location && (
               <View style={styles.locationContainer}>
-                <Text style={styles.locationText}>📍 {user.location}</Text>
+                <Ionicons name="location" size={14} color={DesignSystem.colors.textMuted} />
+                <Text style={styles.locationText}>{user.location}</Text>
               </View>
             )}
 
             <View style={styles.actionButtonsRow}>
-              <TouchableOpacity style={styles.primaryButton}>
-                <Text style={styles.primaryButtonText}>Connect</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.secondaryButton}>
-                <Text style={styles.secondaryButtonText}>Message</Text>
-              </TouchableOpacity>
+              <ModernButton text="Connect" onPressed={() => console.log('Connect')} />
+              <ModernButton text="Message" variant="outline" onPressed={() => console.log('Message')} />
             </View>
           </View>
         </View>
@@ -127,12 +126,12 @@ const UserProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
   },
   headerGradient: {
-    paddingBottom: 30,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    paddingBottom: DesignSystem.spacing.lg,
+    borderBottomLeftRadius: DesignSystem.spacing.lg,
+    borderBottomRightRadius: DesignSystem.spacing.lg,
     overflow: 'hidden',
   },
   fullBackgroundImage: {
@@ -141,13 +140,13 @@ const styles = StyleSheet.create({
   },
   overlay: {
     paddingTop: 60,
-    paddingHorizontal: 20,
+    paddingHorizontal: DesignSystem.spacing.md,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: DesignSystem.spacing.md,
   },
   iconButton: {
     width: 40,
@@ -157,14 +156,8 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: 'rgba(0,0,0,0.3)',
   },
-  backButtonText: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginTop: -4,
-  },
   headerTitle: {
-    color: 'white',
+    color: DesignSystem.colors.onSurface,
     fontSize: 18,
     fontWeight: '700',
   },
@@ -172,28 +165,19 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#121212',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#121212',
-    padding: 20,
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
+    padding: DesignSystem.spacing.md,
   },
   errorText: {
-    color: '#FF6B6B',
-    fontSize: 16,
-    marginBottom: 20,
-  },
-  retryButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: '#333',
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: 'white',
+    color: DesignSystem.colors.errorRed,
+    ...DesignSystem.typography.bodyLarge,
+    marginBottom: DesignSystem.spacing.md,
   },
   profileHeader: {
     alignItems: 'center',
@@ -204,69 +188,47 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
     borderWidth: 4,
-    borderColor: '#1E90FF',
-    marginBottom: 15,
+    borderColor: DesignSystem.colors.primary,
+    marginBottom: DesignSystem.spacing.sm,
   },
   nameText: {
-    color: 'white',
-    fontSize: 26,
-    fontWeight: '800',
+    color: DesignSystem.colors.onSurface,
+    ...DesignSystem.typography.headlineLarge,
     marginBottom: 4,
   },
   usernameText: {
-    color: 'rgba(255,255,255,0.7)',
-    fontSize: 16,
-    marginBottom: 8,
+    color: DesignSystem.colors.textMuted,
+    ...DesignSystem.typography.bodyMedium,
+    marginBottom: DesignSystem.spacing.xs,
   },
   locationContainer: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: DesignSystem.colors.surfaceContainer,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 12,
-    marginBottom: 20,
+    borderRadius: DesignSystem.radius.sm,
+    marginBottom: DesignSystem.spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   locationText: {
-    color: '#DDD',
-    fontSize: 14,
+    color: DesignSystem.colors.textMuted,
+    ...DesignSystem.typography.bodySmall,
+    marginLeft: 4,
   },
   actionButtonsRow: {
     flexDirection: 'row',
-    gap: 15,
+    gap: DesignSystem.spacing.sm,
     marginTop: 10,
-  },
-  primaryButton: {
-    backgroundColor: '#1E90FF',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 25,
-  },
-  primaryButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  secondaryButton: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    paddingVertical: 12,
-    paddingHorizontal: 30,
-    borderRadius: 25,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.2)',
-  },
-  secondaryButtonText: {
-    color: 'white',
-    fontWeight: '600',
-    fontSize: 16,
   },
   contentContainer: {
     flex: 1,
-    padding: 20,
+    padding: DesignSystem.spacing.md,
   },
   tabContainer: {
     flexDirection: 'row',
-    marginBottom: 25,
+    marginBottom: DesignSystem.spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.1)',
+    borderBottomColor: DesignSystem.colors.borderColor,
   },
   tabButton: {
     paddingVertical: 12,
@@ -274,59 +236,55 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderColor: '#1E90FF',
+    borderColor: DesignSystem.colors.primaryRed,
   },
   tabButtonText: {
-    color: '#888',
-    fontSize: 16,
-    fontWeight: '600',
+    color: DesignSystem.colors.textMuted,
+    ...DesignSystem.typography.titleMedium,
   },
   activeTabText: {
-    color: 'white',
+    color: DesignSystem.colors.onSurface,
   },
   sectionContent: {
     minHeight: 200,
   },
   sectionTitle: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: DesignSystem.colors.onSurface,
+    ...DesignSystem.typography.titleLarge,
     marginBottom: 10,
     marginTop: 10,
   },
   bioText: {
-    color: '#CCC',
-    fontSize: 15,
-    lineHeight: 22,
-    marginBottom: 20,
+    color: DesignSystem.colors.textSecondary,
+    ...DesignSystem.typography.bodyMedium,
+    marginBottom: DesignSystem.spacing.md,
   },
   statsRow: {
     flexDirection: 'row',
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderRadius: 16,
-    padding: 20,
+    backgroundColor: DesignSystem.colors.surfaceContainer,
+    borderRadius: DesignSystem.radius.lg,
+    padding: DesignSystem.spacing.md,
     justifyContent: 'space-around',
   },
   statItem: {
     alignItems: 'center',
   },
   statValue: {
-    color: 'white',
-    fontSize: 22,
-    fontWeight: 'bold',
+    color: DesignSystem.colors.onSurface,
+    ...DesignSystem.typography.headlineMedium,
   },
   statLabel: {
-    color: '#888',
-    fontSize: 12,
+    color: DesignSystem.colors.textMuted,
+    ...DesignSystem.typography.labelSmall,
     marginTop: 4,
   },
   dividerVertical: {
     width: 1,
     height: '80%',
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: DesignSystem.colors.borderColor,
   },
   emptyText: {
-    color: '#666',
+    color: DesignSystem.colors.textMuted,
     textAlign: 'center',
     marginTop: 20,
     fontStyle: 'italic',

@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { SafeImage } from '../components/common/SafeImage';
 import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useResetPasswordMutation } from '../store/api';
+import { useResetPasswordV1AuthResetPasswordPostMutation } from '../store/api';
 
 const { width, height } = Dimensions.get('window');
 
@@ -15,7 +16,7 @@ const ChangePassScreen = () => {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const [resetPassword, { isLoading }] = useResetPasswordMutation();
+  const [resetPassword, { isLoading }] = useResetPasswordV1AuthResetPasswordPostMutation();
 
   // Placeholder for password strength logic
   const getPasswordStrength = (password: string) => {
@@ -29,7 +30,8 @@ const ChangePassScreen = () => {
 
   const handlePasswordChange = async () => {
     // In a real app, the resetToken should come from URL parameters
-    const token = resetTokenParam || 'dummy-reset-token'; // Use actual token or placeholder
+    const tokenString = (Array.isArray(resetTokenParam) ? resetTokenParam[0] : resetTokenParam) || 'dummy-reset-token';
+    const token = tokenString as string;
 
     if (!token) {
       Alert.alert('Error', 'Password reset token is missing.');
@@ -45,7 +47,13 @@ const ChangePassScreen = () => {
     }
 
     try {
-      const result = await resetPassword({ token, newPassword }).unwrap();
+      const result = await resetPassword({
+        passwordResetConfirm: {
+          token,
+          new_password: newPassword,
+          new_password_confirm: confirmPassword
+        }
+      }).unwrap();
       console.log('Password reset successful:', result);
       Alert.alert('Success', 'Your password has been changed successfully. Please log in with your new password.');
       router.replace('/LoginScreen'); // Navigate to login after successful password change
@@ -58,8 +66,8 @@ const ChangePassScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Image
-        source={{/* require('../../assets/ui/extra/Change Pass.png') */}}
+      <SafeImage
+        source={{/* require('../../assets/ui/extra/Change Pass.png') */ }}
         style={styles.backgroundImage}
         resizeMode="cover"
       />

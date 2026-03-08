@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { SafeImage } from '../components/common/SafeImage';
 import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 
@@ -34,7 +35,7 @@ const SignUpAltScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Image
+      <SafeImage
         source={{/* require('../../assets/ui/extra/Sign up-1.png') */}}
         style={styles.backgroundImage}
         resizeMode="cover"

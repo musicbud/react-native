@@ -1,5 +1,6 @@
 // musicbud-expo/src/screens/IntroductionScreen.tsx
 import React from 'react';
+import { SafeImage } from '../components/common/SafeImage';
 import { StyleSheet, View, Text, Image, Linking, TouchableOpacity, Dimensions } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
@@ -22,12 +23,12 @@ export default function IntroductionScreen() {
         <Text style={styles.eslamText}>Eslam.</Text>
       </View>
       <View style={styles.profileContainer} testID="Profile">
-        <Image source={{ uri: imgProfile }} style={styles.profileImage} />
+        <SafeImage source={{ uri: imgProfile }} style={styles.profileImage} />
       </View>
       <View style={styles.linksContainer} testID="Links">
         <View style={styles.backlink}>
           <View style={styles.socialIconContainer}>
-            <Image source={{ uri: imgVector }} style={styles.socialIcon} />
+            <SafeImage source={{ uri: imgVector }} style={styles.socialIcon} />
           </View>
           <TouchableOpacity onPress={() => handleLinkPress("https://dribbble.com/Evani")}>
             <Text style={styles.linkText}>Gray | Dribbble</Text>
@@ -35,7 +36,7 @@ export default function IntroductionScreen() {
         </View>
         <View style={styles.backlink}>
           <View style={styles.socialIconContainer}>
-            <Image source={{ uri: imgSocialBehance }} style={styles.socialIcon} />
+            <SafeImage source={{ uri: imgSocialBehance }} style={styles.socialIcon} />
           </View>
           <TouchableOpacity onPress={() => handleLinkPress("https://www.behance.net/Grayberry")}>
             <Text style={styles.linkText}>Gray | Behance</Text>
@@ -43,7 +44,7 @@ export default function IntroductionScreen() {
         </View>
         <View style={styles.backlink}>
           <View style={styles.socialIconContainer}>
-            <Image source={{ uri: imgVector1 }} style={styles.socialIcon} />
+            <SafeImage source={{ uri: imgVector1 }} style={styles.socialIcon} />
           </View>
           <Text style={styles.emailText}>
             <Text style={styles.emailTextBold}>GrayBerryPawn@gmail</Text>

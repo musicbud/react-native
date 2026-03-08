@@ -1,196 +1,141 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, Dimensions, ScrollView, TouchableOpacity, FlatList, ActivityIndicator } from 'react-native';
+import React from 'react';
+import { SafeImage } from '../components/common/SafeImage';
+import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, FlatList, ActivityIndicator, SafeAreaView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useGetEventDetailsQuery } from '../store/api'; // This now fetches a list of events
-
-const { width, height } = Dimensions.get('window');
+import { Ionicons } from '@expo/vector-icons';
+import { useGetAllEventsV1EventsGetQuery } from '../store/api';
+import { DesignSystem } from '../theme/design_system';
 
 const EventsScreen = () => {
   const router = useRouter();
-  // Call the useGetEventDetailsQuery without an ID to get all events
-  const { data: eventsData, error: eventsError, isLoading: isEventsLoading } = useGetEventDetailsQuery(''); // Pass empty string to trigger 'get all'
-  
-  if (isEventsLoading) {
+  const { data: eventsWrapper, error: eventsError, isLoading } = useGetAllEventsV1EventsGetQuery();
+
+  if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#1E90FF" />
-        <Text style={styles.loadingText}>Loading Events...</Text>
       </View>
     );
   }
 
   if (eventsError) {
-    console.error("Events Error:", eventsError);
     return (
       <View style={styles.errorContainer}>
+        <Ionicons name="alert-circle" size={48} color={DesignSystem.colors.errorRed} />
         <Text style={styles.errorText}>Failed to load events.</Text>
-        <Text style={styles.errorText}>Please check your backend server.</Text>
       </View>
     );
   }
 
-  const events = eventsData?.data || []; // Assuming data key holds the array of events
+  const events: any[] = eventsWrapper?.data || [];
 
-  const renderEventItem = ({ item }: { item: any }) => (
-    <TouchableOpacity style={styles.eventItem} onPress={() => router.push(`/EventScreen/${item.id}`)}>
-      <Image source={{ uri: item.cover_image_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.eventImage} />
-      <View style={styles.eventDetails}>
-        <Text style={styles.eventTitle}>{item.title}</Text>
-        <Text style={styles.eventDate}>{new Date(item.date).toLocaleDateString()}</Text>
-        <Text style={styles.eventLocation}>{item.location}</Text>
-      </View>
-      <Text style={styles.chevronIcon}>›</Text>
-    </TouchableOpacity>
-  );
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return 'TBD';
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  };
+
+  const renderEventItem = ({ item }: { item: any }) => {
+    const coverUrl = item.cover_image_url
+      || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.title || 'Event')}&background=1a1a2e&color=fff&size=300`;
+
+    return (
+      <TouchableOpacity
+        style={styles.eventCard}
+        activeOpacity={0.85}
+        onPress={() => router.push(`/EventScreen/${item.id}` as any)}
+      >
+        <SafeImage source={{ uri: coverUrl }} style={styles.eventImage} resizeMode="cover" />
+        <View style={styles.eventOverlay} />
+
+        {/* Date Badge */}
+        <View style={styles.dateBadge}>
+          <Text style={styles.dateBadgeText}>{formatDate(item.date)}</Text>
+        </View>
+
+        <View style={styles.eventBody}>
+          <Text style={styles.eventTitle} numberOfLines={1}>{item.title}</Text>
+          <View style={styles.eventMeta}>
+            {item.location && (
+              <View style={styles.metaRow}>
+                <Ionicons name="location" size={12} color={DesignSystem.colors.textMuted} />
+                <Text style={styles.metaText}>{item.location}</Text>
+              </View>
+            )}
+            {item.attendees_count != null && (
+              <View style={styles.metaRow}>
+                <Ionicons name="people" size={12} color={DesignSystem.colors.textMuted} />
+                <Text style={styles.metaText}>{item.attendees_count} attending</Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
-    <ScrollView style={styles.container}>
-      <Image
-        source={{/* require('../../assets/ui/Events.png') */}} // Background from Events.png
-        style={styles.fullBackgroundImage}
-        resizeMode="cover"
-      />
-      <View style={styles.overlay}>
-        {/* Header */}
+    <View style={styles.container}>
+      <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Text style={styles.backButtonText}>←</Text>
-          </TouchableOpacity>
           <Text style={styles.screenTitle}>Events</Text>
-          <TouchableOpacity onPress={() => router.push('/EventScreen')}> {/* Hypothetical create event screen */}
-            <Text style={styles.addIcon}>+</Text>
+          <TouchableOpacity style={styles.addBtn}>
+            <Ionicons name="add" size={24} color={DesignSystem.colors.primary} />
           </TouchableOpacity>
         </View>
 
-        {events.length === 0 ? (
-          <View style={styles.noEventsContainer}>
-            <Text style={styles.noEventsText}>No upcoming events found.</Text>
-            <Text style={styles.noEventsText}>Be the first to create one!</Text>
-          </View>
-        ) : (
-          <FlatList
-            data={events}
-            renderItem={renderEventItem}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.eventsList}
-          />
-        )}
-      </View>
-    </ScrollView>
+        <FlatList
+          data={events}
+          renderItem={renderEventItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons name="calendar" size={64} color={DesignSystem.colors.surfaceContainerHighest} />
+              <Text style={styles.emptyTitle}>No events yet</Text>
+              <Text style={styles.emptySubtitle}>Be the first to create one!</Text>
+            </View>
+          }
+        />
+      </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
+  container: { flex: 1, backgroundColor: DesignSystem.colors.backgroundPrimary },
+  loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: DesignSystem.colors.backgroundPrimary },
+  errorContainer: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: DesignSystem.colors.backgroundPrimary, gap: 16 },
+  errorText: { color: DesignSystem.colors.errorRed, fontSize: 16, fontWeight: '600' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: DesignSystem.spacing.lg, paddingTop: 12, paddingBottom: 16 },
+  screenTitle: { color: DesignSystem.colors.textPrimary, ...DesignSystem.typography.headlineLarge },
+  addBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: DesignSystem.colors.primaryContainer, justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: DesignSystem.colors.primary },
+  list: { paddingHorizontal: DesignSystem.spacing.md, paddingBottom: 40 },
+  eventCard: {
+    width: '100%',
+    height: 200,
+    borderRadius: DesignSystem.radius.lg,
+    overflow: 'hidden',
+    marginBottom: DesignSystem.spacing.md,
+    backgroundColor: DesignSystem.colors.surfaceContainer,
   },
-  fullBackgroundImage: {
-    width: width,
-    height: height,
-    position: 'absolute',
-    opacity: 0.3,
+  eventImage: { ...StyleSheet.absoluteFillObject },
+  eventOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: DesignSystem.colors.overlay },
+  dateBadge: {
+    position: 'absolute', top: 14, left: 14,
+    backgroundColor: DesignSystem.colors.primary,
+    borderRadius: 10, paddingHorizontal: 10, paddingVertical: 4,
   },
-  overlay: {
-    flex: 1,
-    paddingTop: 60,
-    paddingHorizontal: 20,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000',
-  },
-  loadingText: {
-    color: 'white',
-    fontSize: 18,
-    marginTop: 10,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000',
-    padding: 20,
-  },
-  errorText: {
-    color: 'red',
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  backButtonText: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  screenTitle: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  addIcon: {
-    color: 'white',
-    fontSize: 30,
-    fontWeight: 'bold',
-  },
-  eventsList: {
-    paddingBottom: 20,
-  },
-  eventItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: 'rgba(30,30,30,0.8)',
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 10,
-  },
-  eventImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 5,
-    marginRight: 15,
-  },
-  eventDetails: {
-    flex: 1,
-  },
-  eventTitle: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  eventDate: {
-    color: '#CCC',
-    fontSize: 14,
-  },
-  eventLocation: {
-    color: '#CCC',
-    fontSize: 14,
-  },
-  chevronIcon: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  noEventsContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 50,
-  },
-  noEventsText: {
-    color: '#888',
-    fontSize: 16,
-    textAlign: 'center',
-  },
+  dateBadgeText: { color: DesignSystem.colors.onPrimary, ...DesignSystem.typography.labelSmall, fontWeight: 'bold' },
+  eventBody: { position: 'absolute', bottom: 0, left: 0, right: 0, padding: DesignSystem.spacing.md, backgroundColor: 'rgba(0,0,0,0.6)' },
+  eventTitle: { color: DesignSystem.colors.textPrimary, ...DesignSystem.typography.titleMedium, marginBottom: 8 },
+  eventMeta: { flexDirection: 'row', gap: 16 },
+  metaRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  metaText: { color: DesignSystem.colors.textSecondary, ...DesignSystem.typography.labelMedium },
+  emptyContainer: { marginTop: 80, alignItems: 'center', gap: 12 },
+  emptyTitle: { color: DesignSystem.colors.textPrimary, ...DesignSystem.typography.titleLarge },
+  emptySubtitle: { color: DesignSystem.colors.textMuted, fontSize: 15 },
 });
 
 export default EventsScreen;

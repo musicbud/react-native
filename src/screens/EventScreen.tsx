@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { SafeImage } from '../components/common/SafeImage';
 import { View, Text, StyleSheet, Image, Dimensions, ScrollView, TouchableOpacity, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useGetEventDetailsQuery } from '../store/api'; // Use useGetEventDetailsQuery
+import { useGetEventDetailsV1EventsEventIdGetQuery } from '../store/api';
 
 const { width, height } = Dimensions.get('window');
 
@@ -12,10 +13,10 @@ const EventScreen = () => {
 
   const [activeTab, setActiveTab] = useState('Overview'); // For tab navigation
 
-  // Fetch specific event details
-  const { data: eventDetails, error: eventError, isLoading: isEventLoading } = useGetEventDetailsQuery(event_id as string, {
-    skip: !event_id, // Skip query if no event_id
-  });
+  const { data: eventDetailsWrapper, error: eventError, isLoading: isEventLoading } = useGetEventDetailsV1EventsEventIdGetQuery(
+    { eventId: event_id as string },
+    { skip: !event_id }
+  );
 
   if (isEventLoading) {
     return (
@@ -36,7 +37,7 @@ const EventScreen = () => {
     );
   }
 
-  const event = eventDetails?.data; // Directly use data from API
+  const event = eventDetailsWrapper?.data;
 
   if (!event) {
     return (
@@ -48,15 +49,15 @@ const EventScreen = () => {
 
   const renderAttendee = ({ item }: { item: any }) => (
     <View style={styles.attendeeItem}>
-      <Image source={{ uri: item.avatar_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.attendeeAvatar} />
+      <SafeImage source={{ uri: item.avatar_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.attendeeAvatar} />
       <Text style={styles.attendeeName}>{item.name}</Text>
     </View>
   );
 
   return (
     <ScrollView style={styles.container}>
-      <Image
-        source={{/* require('../../assets/ui/extra/Event.png') */}}
+      <SafeImage
+        source={{/* require('../../assets/ui/extra/Event.png') */ }}
         style={styles.fullBackgroundImage}
         resizeMode="cover"
       />
@@ -70,17 +71,17 @@ const EventScreen = () => {
           <View style={styles.headerIcons}>
             {/* Placeholder for share/bookmark icons */}
             <TouchableOpacity onPress={() => Alert.alert('Share', 'Share functionality coming soon!')}>
-                <Text style={styles.headerIcon}>🔗</Text>
+              <Text style={styles.headerIcon}>🔗</Text>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => Alert.alert('Bookmark', 'Bookmark functionality coming soon!')}>
-                <Text style={styles.headerIcon}>🔖</Text>
+              <Text style={styles.headerIcon}>🔖</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Event Banner */}
         <View style={styles.eventBanner}>
-          <Image source={{ uri: event.cover_image_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.eventBannerImage} resizeMode="cover" />
+          <SafeImage source={{ uri: event.cover_image_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.eventBannerImage} resizeMode="cover" />
           <Text style={styles.eventBannerDate}>{new Date(event.date).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })}</Text>
         </View>
 

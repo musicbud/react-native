@@ -1,81 +1,62 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, Animated, PanResponder, ActivityIndicator, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useGetDiscoveryCardsQuery, useSwipeUserMutation } from '../store/api';
+import { SafeImage } from '../components/common/SafeImage';
+import {
+  View, Text, StyleSheet, Image, Dimensions,
+  TouchableOpacity, Animated, PanResponder, ActivityIndicator, Alert,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import {
+  useGetPotentialMatchesV1MatchingDiscoverGetQuery,
+  useSwipeUserV1MatchingSwipePostMutation
+} from '../store/api';
+import { DesignSystem } from '../theme/design_system';
 
 const { width, height } = Dimensions.get('window');
 
 const CardsScreen = () => {
-  const router = useRouter();
-  const { data: discoveryCardsData, error: discoveryCardsError, isLoading: isDiscoveryCardsLoading } = useGetDiscoveryCardsQuery();
-  const [swipeUser, { isLoading: isSwipingUser }] = useSwipeUserMutation();
+  // ─── All hooks must be declared before any early return ───
+  const { data: discoveryCardsWrapper, error: discoveryCardsError, isLoading } = useGetPotentialMatchesV1MatchingDiscoverGetQuery({});
+  const [swipeUser, { isLoading: isSwipingUser }] = useSwipeUserV1MatchingSwipePostMutation();
   const [currentIndex, setCurrentIndex] = useState(0);
   const swipe = useRef(new Animated.ValueXY()).current;
 
-  if (isDiscoveryCardsLoading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#1E90FF" />
-        <Text style={styles.loadingText}>Loading Cards...</Text>
-      </View>
-    );
-  }
-
-  if (discoveryCardsError) {
-    console.error("Discovery Cards Error:", discoveryCardsError);
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Failed to load discovery cards.</Text>
-        <Text style={styles.errorText}>Please check your backend server and ensure you are logged in.</Text>
-      </View>
-    );
-  }
-
-  const cards = discoveryCardsData?.data || []; // Assuming API returns an array of user profiles directly
+  const cards = (discoveryCardsWrapper as any)?.data || discoveryCardsWrapper || [];
 
   const handleSwipe = async (action: 'like' | 'pass') => {
-    if (currentIndex >= cards.length) return; // No more cards to swipe
-
+    if (currentIndex >= cards.length) return;
     const currentCard = cards[currentIndex];
-    console.log(`Card (User) ${currentCard.display_name} ${action}d`);
 
     try {
-      // The swipeUser mutation expects 'userId' and 'action'
-      const result = await swipeUser({ userId: currentCard.id, action }).unwrap();
-      console.log('Swipe successful:', result);
+      const resultWrapper = await swipeUser({
+        swipeRequest: {
+          user_id: currentCard.id,
+          action
+        }
+      }).unwrap();
+      const result = resultWrapper?.data || resultWrapper;
       if (result.is_match) {
-        Alert.alert('It\'s a Match!', `You matched with ${currentCard.display_name}!`);
+        Alert.alert("It's a Match! 🎉", `You matched with ${currentCard.display_name || currentCard.username}!`);
       }
-      setCurrentIndex((prevIndex) => prevIndex + 1);
-      swipe.setValue({ x: 0, y: 0 }); // Reset card position
+      setCurrentIndex((prev) => prev + 1);
+      swipe.setValue({ x: 0, y: 0 });
     } catch (error: any) {
-      console.error('Swipe failed:', error);
-      Alert.alert('Swipe Failed', error?.data?.message || 'Could not process swipe. Please try again.');
+      Alert.alert('Oops', error?.data?.message || 'Could not process swipe.');
     }
   };
 
   const panResponder = useRef(
     PanResponder.create({
       onMoveShouldSetPanResponder: () => true,
-      onPanResponderMove: (_, gesture) => {
-        swipe.setValue({ x: gesture.dx, y: gesture.dy });
-      },
-      onPanResponderRelease: (_, gesture) => {
-        if (gesture.dx > 120) { // Swiped right (like)
-          Animated.spring(swipe, {
-            toValue: { x: width + 100, y: gesture.dy },
-            useNativeDriver: true,
-          }).start(() => handleSwipe('like'));
-        } else if (gesture.dx < -120) { // Swiped left (pass)
-          Animated.spring(swipe, {
-            toValue: { x: -width - 100, y: gesture.dy },
-            useNativeDriver: true,
-          }).start(() => handleSwipe('pass'));
-        } else { // Not a significant swipe, return to center
-          Animated.spring(swipe, {
-            toValue: { x: 0, y: 0 },
-            useNativeDriver: true,
-          }).start();
+      onPanResponderMove: (_, g) => swipe.setValue({ x: g.dx, y: g.dy }),
+      onPanResponderRelease: (_, g) => {
+        if (g.dx > 120) {
+          Animated.spring(swipe, { toValue: { x: width + 100, y: g.dy }, useNativeDriver: true })
+            .start(() => handleSwipe('like'));
+        } else if (g.dx < -120) {
+          Animated.spring(swipe, { toValue: { x: -width - 100, y: g.dy }, useNativeDriver: true })
+            .start(() => handleSwipe('pass'));
+        } else {
+          Animated.spring(swipe, { toValue: { x: 0, y: 0 }, useNativeDriver: true }).start();
         }
       },
     })
@@ -87,35 +68,62 @@ const CardsScreen = () => {
     extrapolate: 'clamp',
   });
 
-  const animatedCardStyle = {
-    transform: [...swipe.getTranslateTransform(), { rotate }],
-  };
+  // ─── Early returns AFTER all hooks ───
+  if (isLoading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color="#1E90FF" />
+        <Text style={styles.loadingText}>Loading cards…</Text>
+      </View>
+    );
+  }
+
+  if (discoveryCardsError) {
+    return (
+      <View style={styles.centered}>
+        <Ionicons name="alert-circle" size={48} color="#FF3B30" />
+        <Text style={styles.errorText}>Failed to load discovery cards.</Text>
+      </View>
+    );
+  }
 
   const renderCard = () => {
     if (currentIndex >= cards.length) {
       return (
-        <View style={styles.noMoreCardsContainer}>
-          <Text style={styles.noMoreCardsText}>No more users to discover!</Text>
-          <TouchableOpacity style={styles.refreshButton} onPress={() => setCurrentIndex(0)}>
-            <Text style={styles.refreshButtonText}>Refresh</Text>
+        <View style={styles.noMoreCards}>
+          <Ionicons name="people" size={64} color="#333" />
+          <Text style={styles.noMoreText}>No more users to discover!</Text>
+          <TouchableOpacity style={styles.refreshBtn} onPress={() => setCurrentIndex(0)}>
+            <Text style={styles.refreshText}>Refresh</Text>
           </TouchableOpacity>
         </View>
       );
     }
 
     const card = cards[currentIndex];
+    const avatarUrl = card.avatar_url
+      || `https://ui-avatars.com/api/?name=${encodeURIComponent(card.display_name || card.username || 'U')}&background=1E90FF&color=fff`;
+
     return (
-      <Animated.View style={[styles.card, animatedCardStyle]} {...panResponder.panHandlers}>
-        <Image source={{ uri: card.avatar_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.cardImage} />
+      <Animated.View
+        style={[styles.card, { transform: [...swipe.getTranslateTransform(), { rotate }] }]}
+        {...panResponder.panHandlers}
+      >
+        <SafeImage source={{ uri: avatarUrl }} style={styles.cardImage} resizeMode="cover" />
+        <View style={styles.cardOverlay} />
         <View style={styles.cardInfo}>
-          <Text style={styles.cardTitle}>{card.display_name || card.username}</Text>
-          <Text style={styles.cardDescription}>{card.bio || 'No bio available.'}</Text>
-          <View style={styles.tagsContainer}>
-            {card.common_interests?.map((interest: string, index: number) => (
-              <Text key={index} style={styles.tagText}>{interest}</Text>
+          <Text style={styles.cardName}>{card.display_name || card.username}</Text>
+          {card.bio ? <Text style={styles.cardBio} numberOfLines={2}>{card.bio}</Text> : null}
+          <View style={styles.tags}>
+            {card.common_interests?.slice(0, 3).map((interest: string, i: number) => (
+              <View key={i} style={styles.tag}>
+                <Text style={styles.tagText}>{interest}</Text>
+              </View>
             ))}
-            {card.top_genres?.map((genre: string, index: number) => (
-              <Text key={`genre-${index}`} style={styles.tagText}>{genre}</Text>
+            {card.top_genres?.slice(0, 2).map((genre: string, i: number) => (
+              <View key={`g${i}`} style={[styles.tag, styles.genreTag]}>
+                <Text style={styles.tagText}>{genre}</Text>
+              </View>
             ))}
           </View>
         </View>
@@ -125,187 +133,92 @@ const CardsScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* <Image
-        source={{/* require('../../assets/ui/Cards.png') */}}
-      style={styles.fullBackgroundImage}
-      resizeMode="cover"
-      /> */}
-      {/* TODO: Fix missing asset Cards.png */}
-      <View style={styles.overlay}>
-        <Text style={styles.screenTitle}>Discover Users</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>Discover</Text>
+      </View>
 
-        <View style={styles.cardStackContainer}>
-          {renderCard()}
-          {isSwipingUser && <ActivityIndicator size="large" color="#1E90FF" style={styles.swipingIndicator} />}
-        </View>
+      <View style={styles.cardStack}>
+        {renderCard()}
+        {isSwipingUser && (
+          <ActivityIndicator size="large" color="#1E90FF" style={styles.swipingOverlay} />
+        )}
+      </View>
 
-        <View style={styles.cardActions}>
-          <TouchableOpacity style={styles.dislikeButton} onPress={() => handleSwipe('pass')} disabled={isSwipingUser}>
-            <Text style={styles.actionButtonText}>👎</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.likeButton} onPress={() => handleSwipe('like')} disabled={isSwipingUser}>
-            <Text style={styles.actionButtonText}>👍</Text>
-          </TouchableOpacity>
-        </View>
+      <View style={styles.actions}>
+        <TouchableOpacity
+          style={[styles.actionBtn, styles.passBtn]}
+          onPress={() => handleSwipe('pass')}
+          disabled={isSwipingUser || currentIndex >= cards.length}
+        >
+          <Ionicons name="close" size={32} color="#FF3B30" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.actionBtn, styles.superBtn]}
+          onPress={() => handleSwipe('like')}
+          disabled={isSwipingUser || currentIndex >= cards.length}
+        >
+          <Ionicons name="star" size={24} color="#FFD700" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.actionBtn, styles.likeBtn]}
+          onPress={() => handleSwipe('like')}
+          disabled={isSwipingUser || currentIndex >= cards.length}
+        >
+          <Ionicons name="heart" size={28} color="#1E90FF" />
+        </TouchableOpacity>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  fullBackgroundImage: {
-    width: width,
-    height: height,
-    position: 'absolute',
-    opacity: 0.3,
-  },
-  overlay: {
-    flex: 1,
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000',
-  },
-  loadingText: {
-    color: 'white',
-    fontSize: 18,
-    marginTop: 10,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000',
-    padding: 20,
-  },
-  errorText: {
-    color: 'red',
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  screenTitle: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  cardStackContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    width: '100%',
-  },
+  container: { flex: 1, backgroundColor: DesignSystem.colors.backgroundPrimary },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: DesignSystem.colors.backgroundPrimary, gap: 14 },
+  loadingText: { color: DesignSystem.colors.textMuted, fontSize: 16 },
+  errorText: { color: DesignSystem.colors.errorRed, fontSize: 16, fontWeight: '600' },
+  header: { paddingTop: 60, paddingHorizontal: 24, paddingBottom: 12 },
+  title: { color: DesignSystem.colors.textPrimary, fontSize: 28, fontWeight: '800' },
+  cardStack: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   card: {
-    width: width * 0.8,
-    height: height * 0.6,
-    backgroundColor: 'rgba(30,30,30,0.8)',
-    borderRadius: 20,
+    width: width * 0.88,
+    height: height * 0.62,
+    borderRadius: 24,
+    overflow: 'hidden',
     position: 'absolute',
-    justifyContent: 'flex-end',
-    padding: 20,
-    boxShadow: '0px 2px 3.84px rgba(0, 0, 0, 0.25)',
-    elevation: 5,
+    backgroundColor: DesignSystem.colors.surfaceContainer,
+    elevation: 6,
   },
-  cardImage: {
-    ...StyleSheet.absoluteFillObject,
-    borderRadius: 20,
-  },
+  cardImage: { ...StyleSheet.absoluteFillObject },
+  cardOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.35)' },
   cardInfo: {
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    borderRadius: 10,
-    padding: 10,
+    position: 'absolute', bottom: 0, left: 0, right: 0,
+    padding: 24, backgroundColor: 'rgba(0,0,0,0.55)',
   },
-  cardTitle: {
-    color: 'white',
-    fontSize: 28,
-    fontWeight: 'bold',
+  cardName: { color: DesignSystem.colors.onPrimary, fontSize: 26, fontWeight: '800', marginBottom: 4 },
+  cardBio: { color: DesignSystem.colors.textSecondary, fontSize: 14, lineHeight: 20, marginBottom: 12 },
+  tags: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  tag: { backgroundColor: DesignSystem.colors.surfaceContainerHighest, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
+  genreTag: { backgroundColor: DesignSystem.colors.primaryContainer },
+  tagText: { color: DesignSystem.colors.onPrimary, fontSize: 12, fontWeight: '600' },
+  noMoreCards: { alignItems: 'center', gap: 16 },
+  noMoreText: { color: DesignSystem.colors.textMuted, fontSize: 18, fontWeight: '600' },
+  refreshBtn: { backgroundColor: DesignSystem.colors.primary, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 24 },
+  refreshText: { color: DesignSystem.colors.onPrimary, fontSize: 16, fontWeight: '700' },
+  swipingOverlay: { position: 'absolute' },
+  actions: {
+    flexDirection: 'row', justifyContent: 'center', alignItems: 'center',
+    gap: 20, paddingBottom: 40, paddingTop: 16,
   },
-  cardDescription: {
-    color: 'white',
-    fontSize: 16,
-    marginTop: 5,
+  actionBtn: {
+    width: 60, height: 60, borderRadius: 30,
+    justifyContent: 'center', alignItems: 'center',
+    backgroundColor: DesignSystem.colors.surfaceContainer, elevation: 4,
   },
-  tagsContainer: {
-    flexDirection: 'row',
-    marginTop: 10,
-    flexWrap: 'wrap',
-  },
-  tagText: {
-    color: '#1E90FF',
-    backgroundColor: 'rgba(30,144,255,0.2)',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 15,
-    marginRight: 5,
-    marginBottom: 5,
-    fontSize: 12,
-  },
-  cardActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    width: '80%',
-    marginTop: 20,
-    marginBottom: 20,
-  },
-  dislikeButton: {
-    backgroundColor: '#FF6347', // Tomato red
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  likeButton: {
-    backgroundColor: '#3CB371', // MediumSeaGreen
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  actionButtonText: {
-    color: 'white',
-    fontSize: 30,
-    fontWeight: 'bold',
-  },
-  noMoreCardsContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  noMoreCardsText: {
-    color: 'white',
-    fontSize: 20,
-    marginBottom: 20,
-  },
-  refreshButton: {
-    backgroundColor: '#1E90FF',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 10,
-  },
-  refreshButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  swipingIndicator: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    zIndex: 10,
-    transform: [{ translateX: -15 }, { translateY: -15 }],
-  },
+  passBtn: { borderWidth: 2, borderColor: DesignSystem.colors.errorRed },
+  superBtn: { width: 50, height: 50, borderRadius: 25, borderWidth: 2, borderColor: DesignSystem.colors.accentBlue },
+  likeBtn: { borderWidth: 2, borderColor: DesignSystem.colors.successGreen },
 });
 
 export default CardsScreen;

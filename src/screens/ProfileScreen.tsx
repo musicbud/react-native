@@ -1,22 +1,49 @@
 import React, { useState } from 'react';
+import { SafeImage } from '../components/common/SafeImage';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, ActivityIndicator, Alert, Modal, TextInput, StatusBar, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useGetMyProfileQuery, useUpdateMyProfileMutation, useGetUserPlaylistsQuery, useCreatePlaylistMutation, User, Playlist } from '../store/api';
+import { useForm, Controller } from 'react-hook-form';
+import {
+  useGetCurrentUserInfoV1AuthMeGetQuery,
+  useUpdateUserProfileV1UsersProfilePutMutation,
+  useGetMyPlaylistsV1PlaylistsPlaylistsMeGetQuery,
+  useCreatePlaylistV1LibraryPlaylistsPostMutation
+} from '../store/api';
 import { LinearGradient } from 'expo-linear-gradient';
+import { DesignSystem } from '../theme/design_system';
+import { ModernButton } from '../components/common/ModernButton';
+import { SectionHeader } from '../components/common/SectionHeader';
+
+interface ProfileFormValues {
+  display_name: string;
+  bio: string;
+  location: string;
+  age?: number;
+  gender?: string;
+}
 
 const ProfileScreen = () => {
   const router = useRouter();
-  const { data: userProfileData, error: profileError, isLoading: isProfileLoading } = useGetMyProfileQuery();
-  const [updateMyProfile, { isLoading: isUpdatingProfile }] = useUpdateMyProfileMutation();
+  const { data: userProfileWrapper, error: profileError, isLoading: isProfileLoading } = useGetCurrentUserInfoV1AuthMeGetQuery();
+  const [updateMyProfile, { isLoading: isUpdatingProfile }] = useUpdateUserProfileV1UsersProfilePutMutation();
 
-  const { data: playlistsData, isLoading: isPlaylistsLoading } = useGetUserPlaylistsQuery();
-  const [createPlaylist, { isLoading: isCreatingPlaylist }] = useCreatePlaylistMutation();
+  const { data: playlistsWrapper, isLoading: isPlaylistsLoading } = useGetMyPlaylistsV1PlaylistsPlaylistsMeGetQuery();
+  const playlistsData = playlistsWrapper?.data;
+  const [createPlaylist, { isLoading: isCreatingPlaylist }] = useCreatePlaylistV1LibraryPlaylistsPostMutation();
 
   const [isEditModalVisible, setEditModalVisible] = useState(false);
-  const [editedDisplayName, setEditedDisplayName] = useState('');
-  const [editedBio, setEditedBio] = useState('');
-  const [editedLocation, setEditedLocation] = useState('');
+
+  const { control, handleSubmit, reset } = useForm<ProfileFormValues>({
+    defaultValues: {
+      display_name: '',
+      bio: '',
+      location: '',
+      age: undefined,
+      gender: '',
+    }
+  });
 
   const [isPlaylistModalVisible, setPlaylistModalVisible] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState('');
@@ -26,7 +53,7 @@ const ProfileScreen = () => {
     return (
       <View style={styles.loadingContainer}>
         <StatusBar barStyle="light-content" />
-        <ActivityIndicator size="large" color="#1E90FF" />
+        <ActivityIndicator size="large" color={DesignSystem.colors.primaryRed} />
       </View>
     );
   }
@@ -36,14 +63,12 @@ const ProfileScreen = () => {
       <View style={styles.errorContainer}>
         <StatusBar barStyle="light-content" />
         <Text style={styles.errorText}>Unable to load profile.</Text>
-        <TouchableOpacity style={styles.loginButton} onPress={() => router.replace('/LoginScreen')}>
-          <Text style={styles.loginButtonText}>Go to Login</Text>
-        </TouchableOpacity>
+        <ModernButton text="Go to Login" onPressed={() => router.replace('/LoginScreen')} />
       </View>
     );
   }
 
-  const user: User = userProfileData || {
+  const user = userProfileWrapper?.data || {
     id: 'guest',
     username: 'guest_user',
     display_name: 'Guest User',
@@ -63,13 +88,11 @@ const ProfileScreen = () => {
     }
   };
 
-  const handleSaveProfile = async () => {
+  const handleSaveProfile = async (data: ProfileFormValues) => {
     try {
       await updateMyProfile({
-        display_name: editedDisplayName,
-        bio: editedBio,
-        location: editedLocation,
-      } as Partial<User>).unwrap();
+        userProfileUpdate: data as any
+      }).unwrap();
       Alert.alert('Success', 'Profile updated successfully!');
       setEditModalVisible(false);
     } catch (error: any) {
@@ -85,8 +108,10 @@ const ProfileScreen = () => {
     }
     try {
       await createPlaylist({
-        name: newPlaylistName,
-        description: newPlaylistDescription,
+        playlistData: {
+          name: newPlaylistName,
+          description: newPlaylistDescription,
+        }
       }).unwrap();
       setPlaylistModalVisible(false);
       setNewPlaylistName('');
@@ -97,9 +122,9 @@ const ProfileScreen = () => {
     }
   };
 
-  const renderPlaylistItem = ({ item }: { item: Playlist }) => (
+  const renderPlaylistItem = ({ item }: { item: any }) => (
     <TouchableOpacity style={styles.playlistCard}>
-      <Image
+      <SafeImage
         source={{ uri: item.cover_url || 'https://ui-avatars.com/api/?name=Music+Bud&background=random' }}
         style={styles.playlistImage}
       />
@@ -108,37 +133,43 @@ const ProfileScreen = () => {
   );
 
   const profileActions = [
-    { id: '1', text: 'My Account', icon: '⚙️', screen: '/MyAccountScreen' },
-    { id: '2', text: 'Discovery Settings', icon: '🔍', screen: '/DiscoverySettingsScreen' },
-    { id: '3', text: 'Help & Support', icon: '💬', screen: '/OnlineSupportScreen' },
-    { id: '4', text: 'Log Out', icon: '🚪', action: handleLogout, danger: true },
+    { id: '1', text: 'My Account', icon: 'person', screen: '/MyAccountScreen' },
+    { id: '2', text: 'Discovery Settings', icon: 'search', screen: '/DiscoverySettingsScreen' },
+    { id: '3', text: 'Connect Services', icon: 'link', screen: '/ConnectServicesScreen' },
+    { id: '4', text: 'My Music Map', icon: 'map', screen: '/MapScreen' },
+    { id: '5', text: 'Help & Support', icon: 'chatbubbles', screen: '/OnlineSupportScreen' },
+    { id: '6', text: 'Log Out', icon: 'log-out', action: handleLogout, danger: true },
   ];
 
   return (
     <ScrollView style={styles.container}>
       <StatusBar barStyle="light-content" />
       <LinearGradient
-        colors={['rgba(30,30,30,0.8)', '#121212']}
+        colors={[DesignSystem.colors.surfaceContainerHighest, DesignSystem.colors.backgroundPrimary]}
         style={styles.headerGradient}
       >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.iconButton}>
-            <Text style={styles.backButtonText}>←</Text>
+            <Ionicons name="arrow-back" size={24} color={DesignSystem.colors.onSurface} />
           </TouchableOpacity>
           <Text style={styles.screenTitle}>Profile</Text>
           <TouchableOpacity onPress={() => {
-            setEditedDisplayName(user.display_name || user.username);
-            setEditedBio(user.bio || '');
-            setEditedLocation(user.location || '');
+            reset({
+              display_name: user?.display_name || user?.username || '',
+              bio: user?.bio || '',
+              location: user?.location || '',
+              age: user?.age || undefined,
+              gender: user?.gender || '',
+            });
             setEditModalVisible(true);
           }} style={styles.iconButton}>
-            <Text style={styles.editIcon}>✎</Text>
+            <Ionicons name="pencil" size={20} color={DesignSystem.colors.onSurface} />
           </TouchableOpacity>
         </View>
 
         <View style={styles.profileSummaryContainer}>
           <View style={styles.avatarContainer}>
-            <Image source={{ uri: user.avatar_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.avatar} />
+            <SafeImage source={{ uri: user.avatar_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.avatar} />
             <View style={styles.onlineBadge} />
           </View>
           <Text style={styles.userName}>{user.display_name || user.username}</Text>
@@ -172,11 +203,9 @@ const ProfileScreen = () => {
 
       {/* Playlists Section */}
       <View style={styles.section}>
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>My Playlists</Text>
-        </View>
+        <SectionHeader title="My Playlists" style={{ paddingHorizontal: 0 }} />
         {isPlaylistsLoading ? (
-          <ActivityIndicator color="#1E90FF" />
+          <ActivityIndicator color={DesignSystem.colors.primaryRed} />
         ) : (
           <FlatList
             data={playlistsData || []}
@@ -210,7 +239,7 @@ const ProfileScreen = () => {
               onPress={() => action.action ? action.action() : router.push(action.screen as any)}
             >
               <View style={styles.actionIconContainer}>
-                <Text style={styles.actionButtonIcon}>{action.icon}</Text>
+                <Ionicons name={action.icon as any} size={18} color={DesignSystem.colors.onSurface} />
               </View>
               <Text style={[styles.actionButtonText, action.danger && styles.dangerText]}>{action.text}</Text>
               <Text style={styles.chevronIcon}>›</Text>
@@ -230,48 +259,97 @@ const ProfileScreen = () => {
           <View style={styles.modalView}>
             <Text style={styles.modalTitle}>Edit Profile</Text>
 
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Display Name"
-              placeholderTextColor="#888"
-              value={editedDisplayName}
-              onChangeText={setEditedDisplayName}
+            <Controller
+              control={control}
+              name="display_name"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Display Name"
+                  placeholderTextColor={DesignSystem.colors.textMuted}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
             />
-            <TextInput
-              style={[styles.modalInput, styles.bioInput]}
-              placeholder="Bio"
-              placeholderTextColor="#888"
-              value={editedBio}
-              onChangeText={setEditedBio}
-              multiline
-              textAlignVertical="top"
+
+            <Controller
+              control={control}
+              name="age"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Age"
+                  keyboardType="numeric"
+                  placeholderTextColor={DesignSystem.colors.textMuted}
+                  onBlur={onBlur}
+                  onChangeText={(val) => onChange(val ? parseInt(val) : undefined)}
+                  value={value ? String(value) : ''}
+                />
+              )}
             />
-            <TextInput
-              style={styles.modalInput}
-              placeholder="Location"
-              placeholderTextColor="#888"
-              value={editedLocation}
-              onChangeText={setEditedLocation}
+
+            <Controller
+              control={control}
+              name="gender"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Gender"
+                  placeholderTextColor={DesignSystem.colors.textMuted}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="location"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={styles.modalInput}
+                  placeholder="Location"
+                  placeholderTextColor={DesignSystem.colors.textMuted}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                />
+              )}
+            />
+
+            <Controller
+              control={control}
+              name="bio"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <TextInput
+                  style={[styles.modalInput, styles.bioInput]}
+                  placeholder="Bio"
+                  placeholderTextColor={DesignSystem.colors.textMuted}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  value={value}
+                  multiline
+                  textAlignVertical="top"
+                />
+              )}
             />
 
             <View style={styles.modalButtonContainer}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.buttonClose]}
-                onPress={() => setEditModalVisible(false)}
-              >
-                <Text style={styles.textStyle}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.buttonSave]}
-                onPress={handleSaveProfile}
-                disabled={isUpdatingProfile}
-              >
-                {isUpdatingProfile ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.textStyle}>Save</Text>
-                )}
-              </TouchableOpacity>
+              <ModernButton
+                text="Cancel"
+                variant="secondary"
+                onPressed={() => setEditModalVisible(false)}
+                style={{ flex: 1, marginRight: DesignSystem.spacing.xs }}
+              />
+              <ModernButton
+                text="Save"
+                isLoading={isUpdatingProfile}
+                onPressed={handleSubmit(handleSaveProfile)}
+                style={{ flex: 1, marginLeft: DesignSystem.spacing.xs }}
+              />
             </View>
           </View>
         </View>
@@ -291,14 +369,14 @@ const ProfileScreen = () => {
             <TextInput
               style={styles.modalInput}
               placeholder="Playlist Name"
-              placeholderTextColor="#888"
+              placeholderTextColor={DesignSystem.colors.textMuted}
               value={newPlaylistName}
               onChangeText={setNewPlaylistName}
             />
             <TextInput
               style={[styles.modalInput, styles.bioInput]}
               placeholder="Description (Optional)"
-              placeholderTextColor="#888"
+              placeholderTextColor={DesignSystem.colors.textMuted}
               value={newPlaylistDescription}
               onChangeText={setNewPlaylistDescription}
               multiline
@@ -306,23 +384,18 @@ const ProfileScreen = () => {
             />
 
             <View style={styles.modalButtonContainer}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.buttonClose]}
-                onPress={() => setPlaylistModalVisible(false)}
-              >
-                <Text style={styles.textStyle}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.buttonSave]}
-                onPress={handleCreatePlaylist}
-                disabled={isCreatingPlaylist}
-              >
-                {isCreatingPlaylist ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.textStyle}>Create</Text>
-                )}
-              </TouchableOpacity>
+              <ModernButton
+                text="Cancel"
+                variant="secondary"
+                onPressed={() => setPlaylistModalVisible(false)}
+                style={{ flex: 1, marginRight: DesignSystem.spacing.xs }}
+              />
+              <ModernButton
+                text="Create"
+                isLoading={isCreatingPlaylist}
+                onPressed={handleCreatePlaylist}
+                style={{ flex: 1, marginLeft: DesignSystem.spacing.xs }}
+              />
             </View>
           </View>
         </View>
@@ -334,20 +407,20 @@ const ProfileScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
   },
   headerGradient: {
-    paddingBottom: 30,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+    paddingBottom: DesignSystem.spacing.lg,
+    borderBottomLeftRadius: DesignSystem.spacing.lg,
+    borderBottomRightRadius: DesignSystem.spacing.lg,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: DesignSystem.spacing.md,
     marginTop: 60,
-    paddingHorizontal: 20,
+    paddingHorizontal: DesignSystem.spacing.md,
   },
   iconButton: {
     width: 40,
@@ -355,37 +428,36 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: DesignSystem.colors.surfaceContainer,
   },
   backButtonText: {
-    color: 'white',
+    color: DesignSystem.colors.onSurface,
     fontSize: 24,
     fontWeight: 'bold',
     marginTop: -4,
   },
   screenTitle: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: '700',
+    color: DesignSystem.colors.onSurface,
+    ...DesignSystem.typography.titleLarge,
   },
   editIcon: {
-    color: 'white',
+    color: DesignSystem.colors.onSurface,
     fontSize: 20,
   },
   profileSummaryContainer: {
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: DesignSystem.spacing.md,
   },
   avatarContainer: {
     position: 'relative',
-    marginBottom: 15,
+    marginBottom: DesignSystem.spacing.sm,
   },
   avatar: {
     width: 120,
     height: 120,
     borderRadius: 60,
     borderWidth: 4,
-    borderColor: 'rgba(30, 144, 255, 0.3)',
+    borderColor: DesignSystem.colors.primary,
   },
   onlineBadge: {
     position: 'absolute',
@@ -394,130 +466,113 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderRadius: 12,
-    backgroundColor: '#00FF00',
+    backgroundColor: DesignSystem.colors.successGreen,
     borderWidth: 3,
-    borderColor: '#121212',
+    borderColor: DesignSystem.colors.backgroundPrimary,
   },
   userName: {
-    color: 'white',
-    fontSize: 26,
-    fontWeight: '800',
+    color: DesignSystem.colors.onSurface,
+    ...DesignSystem.typography.headlineLarge,
     marginBottom: 4,
   },
   userHandle: {
-    color: '#888',
-    fontSize: 16,
-    marginBottom: 8,
+    color: DesignSystem.colors.textMuted,
+    ...DesignSystem.typography.bodyMedium,
+    marginBottom: DesignSystem.spacing.xs,
   },
   userLocation: {
-    color: '#BBB',
-    fontSize: 14,
-    marginBottom: 20,
+    color: DesignSystem.colors.textSecondary,
+    ...DesignSystem.typography.bodyMedium,
+    marginBottom: DesignSystem.spacing.md,
   },
   statsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     width: '100%',
-    marginBottom: 25,
-    paddingHorizontal: 20,
+    marginBottom: DesignSystem.spacing.md,
+    paddingHorizontal: DesignSystem.spacing.md,
   },
   statItem: {
     alignItems: 'center',
   },
   statValue: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
+    color: DesignSystem.colors.onSurface,
+    ...DesignSystem.typography.headlineMedium,
   },
   statLabel: {
-    color: '#888',
-    fontSize: 12,
+    color: DesignSystem.colors.textMuted,
+    ...DesignSystem.typography.labelSmall,
     marginTop: 4,
   },
   dividerVertical: {
     width: 1,
     height: '80%',
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: DesignSystem.colors.borderColor,
   },
   bioContainer: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    padding: 15,
-    borderRadius: 16,
+    backgroundColor: DesignSystem.colors.surfaceContainer,
+    padding: DesignSystem.spacing.md,
+    borderRadius: DesignSystem.radius.lg,
     width: '100%',
   },
   userBio: {
-    color: '#DDD',
-    fontSize: 14,
+    color: DesignSystem.colors.textSecondary,
+    ...DesignSystem.typography.bodyMedium,
     textAlign: 'center',
-    lineHeight: 20,
   },
   section: {
-    padding: 20,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  sectionTitle: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+    padding: DesignSystem.spacing.md,
   },
   playlistsListContent: {
-    paddingRight: 20,
-    gap: 15,
+    gap: DesignSystem.spacing.sm,
   },
   playlistCard: {
     width: 140,
-    marginRight: 15,
+    marginRight: DesignSystem.spacing.sm,
   },
   playlistImage: {
     width: 140,
     height: 140,
-    borderRadius: 8,
-    marginBottom: 8,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: DesignSystem.radius.sm,
+    marginBottom: DesignSystem.spacing.xs,
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
   },
   playlistTitle: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: '600',
+    color: DesignSystem.colors.onSurface,
+    ...DesignSystem.typography.titleSmall,
   },
   createPlaylistCard: {
     width: 140,
     height: 140,
-    borderRadius: 8,
-    backgroundColor: 'rgba(30, 144, 255, 0.1)',
+    borderRadius: DesignSystem.radius.sm,
+    backgroundColor: DesignSystem.colors.primaryContainer,
     borderWidth: 1,
-    borderColor: 'rgba(30, 144, 255, 0.3)',
+    borderColor: DesignSystem.colors.primary,
     borderStyle: 'dashed',
     justifyContent: 'center',
     alignItems: 'center',
   },
   createPlaylistIcon: {
     fontSize: 40,
-    color: '#1E90FF',
+    color: DesignSystem.colors.primaryRed,
     marginBottom: 5,
   },
   createPlaylistText: {
-    color: '#1E90FF',
-    fontSize: 14,
-    fontWeight: '600',
+    color: DesignSystem.colors.primaryRed,
+    ...DesignSystem.typography.titleSmall,
   },
   actionsContainer: {
-    backgroundColor: 'rgba(30,30,30,0.5)',
-    borderRadius: 20,
+    backgroundColor: DesignSystem.colors.surfaceContainer,
+    borderRadius: DesignSystem.radius.lg,
     overflow: 'hidden',
   },
   actionButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 18,
-    paddingHorizontal: 20,
+    paddingVertical: DesignSystem.spacing.md,
+    paddingHorizontal: DesignSystem.spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderBottomColor: DesignSystem.colors.borderColor,
   },
   lastActionButton: {
     borderBottomWidth: 0,
@@ -526,120 +581,84 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: 'rgba(30, 144, 255, 0.1)',
+    backgroundColor: DesignSystem.colors.primaryContainer,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 15,
+    marginRight: DesignSystem.spacing.md,
   },
   actionButtonIcon: {
     fontSize: 18,
-    color: '#1E90FF',
+    color: DesignSystem.colors.onSurface,
   },
   actionButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+    color: DesignSystem.colors.onSurface,
+    ...DesignSystem.typography.titleMedium,
     flex: 1,
   },
   dangerText: {
-    color: '#FF6B6B',
+    color: DesignSystem.colors.errorRed,
   },
   chevronIcon: {
-    color: '#666',
+    color: DesignSystem.colors.textMuted,
     fontSize: 20,
     fontWeight: 'bold',
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  loadingText: {
-    color: 'white',
-    fontSize: 16,
-    marginTop: 15,
   },
   errorContainer: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 20,
+    padding: DesignSystem.spacing.md,
   },
   errorText: {
-    color: '#FF6B6B',
-    fontSize: 16,
-    marginBottom: 20,
-  },
-  loginButton: {
-    backgroundColor: '#1E90FF',
-    paddingVertical: 12,
-    paddingHorizontal: 25,
-    borderRadius: 25,
-  },
-  loginButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+    color: DesignSystem.colors.errorRed,
+    ...DesignSystem.typography.bodyLarge,
+    marginBottom: DesignSystem.spacing.md,
   },
   centeredView: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.8)',
+    backgroundColor: DesignSystem.colors.overlay,
   },
   modalView: {
     width: '85%',
-    backgroundColor: '#1E1E1E',
-    borderRadius: 24,
-    padding: 30,
+    backgroundColor: DesignSystem.colors.surfaceContainer,
+    borderRadius: DesignSystem.radius.xl,
+    padding: DesignSystem.spacing.lg,
     alignItems: 'center',
     elevation: 10,
   },
   modalTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: 'white',
-    marginBottom: 25,
+    ...DesignSystem.typography.titleLarge,
+    color: DesignSystem.colors.onSurface,
+    marginBottom: DesignSystem.spacing.md,
   },
   modalInput: {
     width: '100%',
-    height: 50,
-    backgroundColor: '#333',
-    borderRadius: 12,
-    paddingHorizontal: 15,
-    color: 'white',
-    fontSize: 16,
-    marginBottom: 15,
+    minHeight: 50,
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
+    borderRadius: DesignSystem.radius.md,
+    paddingHorizontal: DesignSystem.spacing.md,
+    color: DesignSystem.colors.onSurface,
+    ...DesignSystem.typography.bodyMedium,
+    marginBottom: DesignSystem.spacing.sm,
   },
   bioInput: {
     height: 100,
-    paddingTop: 15,
+    paddingTop: DesignSystem.spacing.md,
   },
   modalButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     width: '100%',
-    marginTop: 10,
-    gap: 15,
-  },
-  modalButton: {
-    flex: 1,
-    borderRadius: 12,
-    paddingVertical: 14,
-    alignItems: 'center',
-  },
-  buttonClose: {
-    backgroundColor: '#333',
-  },
-  buttonSave: {
-    backgroundColor: '#1E90FF',
-  },
-  textStyle: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
+    marginTop: DesignSystem.spacing.xs,
   },
 });
 

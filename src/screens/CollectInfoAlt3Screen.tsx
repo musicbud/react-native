@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { SafeImage } from '../components/common/SafeImage';
 import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 
@@ -45,7 +46,7 @@ const CollectInfoAlt3Screen = () => {
 
   return (
     <View style={styles.container}>
-      <Image
+      <SafeImage
         source={{/* require('../../assets/ui/extra/Collect information-3.png') */}}
         style={styles.backgroundImage}
         resizeMode="cover"

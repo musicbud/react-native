@@ -1,297 +1,263 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, ScrollView, TextInput, FlatList, ActivityIndicator, Alert } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { SafeImage } from '../components/common/SafeImage';
+import {
+  View, Text, StyleSheet, Image, Dimensions, TouchableOpacity,
+  TextInput, FlatList, ActivityIndicator, SafeAreaView, KeyboardAvoidingView, Platform,
+} from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useGetChatChannelsQuery, useSendMessageMutation } from '../store/api'; // Use chat channels to represent watch parties
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import {
+  useGetConversationDetailsV1ChatConversationsConversationIdGetQuery,
+  useGetCurrentUserInfoV1AuthMeGetQuery,
+  useSendMessageV1ChatMessagesPostMutation
+} from '../store/api';
+import { DesignSystem } from '../theme/design_system';
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 const WatchTogetherScreen = () => {
   const router = useRouter();
-  const params = useLocalSearchParams();
-  const { conversation_id } = params; // Expect conversation_id as route parameter
-
+  const { conversation_id } = useLocalSearchParams<{ conversation_id: string }>();
+  const flatListRef = useRef<FlatList>(null);
   const [chatInput, setChatInput] = useState('');
+  const [isChatVisible, setIsChatVisible] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
 
-  // Fetch specific conversation details for this watch party
-  const { data: conversationDetails, error: conversationError, isLoading: isConversationLoading } = useGetChatChannelsQuery(conversation_id ? { status: 'active' } : undefined, {
-    selectFromResult: ({ data, error, isLoading }) => ({
-      data: data?.find((conv: any) => conv.id === conversation_id), // Find the specific conversation
-      error,
-      isLoading,
-    }),
-    skip: !conversation_id, // Skip query if no conversation_id
-  });
+  // Replaced manual store query with actual auth info endpoint hook
+  const { data: myProfileWrapper } = useGetCurrentUserInfoV1AuthMeGetQuery();
+  const myProfile = myProfileWrapper?.data;
 
-  const [sendMessage, { isLoading: isSendingMessage }] = useSendMessageMutation();
+  // Utilize the conversation id parameters properly in the new spec
+  const { data: conversationDetailsWrapper, error, isLoading } = useGetConversationDetailsV1ChatConversationsConversationIdGetQuery(
+    { conversationId: conversation_id },
+    { skip: !conversation_id }
+  );
 
-  const handleSendMessage = async () => {
-    if (!conversation_id) {
-      Alert.alert("Error", "No watch party selected.");
-      return;
-    }
-    if (chatInput.trim()) {
-      try {
-        await sendMessage({
-          conversation_id: conversation_id as string,
-          content: chatInput.trim(),
-          message_type: 'text',
-        }).unwrap();
-        setChatInput('');
-      } catch (error: any) {
-        console.error('Failed to send message:', error);
-        Alert.alert('Error', error?.data?.message || 'Failed to send message.');
-      }
+  const conversationDetails = conversationDetailsWrapper?.data;
+
+  // New Send Message Mutation
+  const [sendMessage, { isLoading: isSending }] = useSendMessageV1ChatMessagesPostMutation();
+
+  const participants = conversationDetails?.participants || [];
+  const chatMessages: any[] = conversationDetails?.messages || [];
+  const partyName = conversationDetails?.name || 'Watch Party';
+  const sharedTitle = (conversationDetails as any)?.shared_content?.title;
+
+  const handleSend = async () => {
+    if (!chatInput.trim() || !conversation_id) return;
+    try {
+      await sendMessage({ messageSend: { conversation_id, content: chatInput.trim() } }).unwrap();
+      setChatInput('');
+    } catch (err: any) {
+      console.error('Send failed:', err);
     }
   };
 
-  const participants = conversationDetails?.participants || [];
-  const chatMessages = conversationDetails?.messages || []; // Assuming messages are part of conversationDetails or fetched separately
+  useEffect(() => {
+    if (chatMessages.length > 0) {
+      setTimeout(() => flatListRef.current?.scrollToEnd({ animated: true }), 100);
+    }
+  }, [chatMessages.length]);
 
-  if (isConversationLoading) {
+  if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#1E90FF" />
-        <Text style={styles.loadingText}>Loading Watch Party...</Text>
+        <Text style={styles.loadingText}>Joining party…</Text>
       </View>
     );
   }
 
-  if (conversationError) {
-    console.error("Watch Party Conversation Error:", conversationError);
+  if (error) {
     return (
-      <View style={styles.errorContainer}>
+      <View style={styles.centerContainer}>
+        <Ionicons name="alert-circle" size={48} color="#FF3B30" />
         <Text style={styles.errorText}>Failed to load watch party.</Text>
-        <Text style={styles.errorText}>Please ensure the conversation ID is valid.</Text>
+        <TouchableOpacity style={styles.retryBtn} onPress={() => router.back()}>
+          <Text style={styles.retryText}>Go Back</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
-  const renderParticipant = ({ item }: { item: any }) => (
-    <View style={styles.participantItem}>
-      <Image source={{ uri: item.avatar_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.participantAvatar} />
-      <Text style={styles.participantName}>{item.display_name || item.username}</Text>
-    </View>
-  );
+  const renderParticipant = ({ item }: { item: any }) => {
+    const avatarUrl = item.avatar_url
+      || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.username || 'U')}&background=1E90FF&color=fff`;
+    const isCurrentUser = item.id === myProfile?.id;
 
-  const renderChatMessage = ({ item }: { item: any }) => (
-    <View style={styles.chatMessageContainer}>
-      <Text style={styles.chatSender}>{item.sender_username}</Text>
-      <Text style={styles.chatMessage}>{item.content}</Text>
-      <Text style={styles.chatTime}>{new Date(item.timestamp).toLocaleTimeString()}</Text>
-    </View>
-  );
+    return (
+      <View style={styles.participantAvatar}>
+        <LinearGradient
+          colors={isCurrentUser ? ['#1E90FF', '#0070E0'] : ['#9B59B6', '#6C3483']}
+          style={styles.participantRing}
+        >
+          <SafeImage source={{ uri: avatarUrl }} style={styles.participantImg} />
+        </LinearGradient>
+        <Text style={styles.participantName} numberOfLines={1}>
+          {isCurrentUser ? 'You' : (item.first_name || item.username)}
+        </Text>
+      </View>
+    );
+  };
+
+  const renderMessage = ({ item }: { item: any }) => {
+    const isMe = item.sender_id === myProfile?.id;
+    return (
+      <View style={[styles.msgRow, isMe ? styles.msgRowMe : styles.msgRowThem]}>
+        <View style={[styles.msgBubble, isMe ? styles.msgBubbleMe : styles.msgBubbleThem]}>
+          {!isMe && <Text style={styles.msgSender}>{item.sender?.username}</Text>}
+          <Text style={styles.msgText}>{item.content}</Text>
+        </View>
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
-      <Image
-        source={{/* require('../../assets/ui/extra/Watch Party.png') */}}
-        style={styles.fullBackgroundImage}
-        resizeMode="cover"
-      />
-      <View style={styles.overlay}>
+      {/* Dark gradient background */}
+      <LinearGradient colors={['#0a0a1a', '#0d0d0d']} style={StyleSheet.absoluteFillObject} />
+
+      <SafeAreaView style={styles.safeArea}>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Text style={styles.backButtonText}>←</Text>
+          <TouchableOpacity onPress={() => router.back()} style={styles.headerBtn}>
+            <Ionicons name="chevron-back" size={22} color="white" />
           </TouchableOpacity>
-          <Text style={styles.screenTitle}>{conversationDetails?.name || 'Watch Party'}</Text> {/* Use conversation name */}
-          <TouchableOpacity onPress={() => console.log('More options')}>
-            <Text style={styles.moreOptionsIcon}>⋮</Text>
+          <View style={styles.headerCenter}>
+            <Text style={styles.headerTitle}>{partyName}</Text>
+            {sharedTitle && <Text style={styles.headerSub}>{sharedTitle}</Text>}
+          </View>
+          <TouchableOpacity
+            style={styles.headerBtn}
+            onPress={() => setIsChatVisible(!isChatVisible)}
+          >
+            <Ionicons name={isChatVisible ? 'chatbubbles' : 'chatbubbles-outline'} size={22} color="#1E90FF" />
           </TouchableOpacity>
         </View>
 
         {/* Video Player Placeholder */}
         <View style={styles.videoPlayer}>
-          <Text style={styles.videoPlaceholderText}>Video Player (Content: {conversationDetails?.shared_content?.title || 'N/A'})</Text>
-        </View>
+          <LinearGradient colors={['#1a1a2e', '#16213e']} style={styles.videoInner}>
+            <Ionicons name="film" size={48} color="#2a2a4a" />
+            <Text style={styles.videoPlaceholder}>
+              {sharedTitle || 'No content selected'}
+            </Text>
+          </LinearGradient>
 
-        {/* Participants Section */}
-        <View style={styles.participantsSection}>
-          <FlatList
-            horizontal
-            data={participants}
-            renderItem={renderParticipant}
-            keyExtractor={(item) => item.id}
-            showsHorizontalScrollIndicator={false}
-          />
-        </View>
-
-        {/* Chat Section */}
-        <View style={styles.chatSection}>
-          <FlatList
-            data={chatMessages}
-            renderItem={renderChatMessage}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.chatMessagesList}
-            inverted // Show latest messages at the bottom
-          />
-          <View style={styles.chatInputContainer}>
-            <TextInput
-              style={styles.chatTextInput}
-              placeholder="Type your message..."
-              placeholderTextColor="#888"
-              value={chatInput}
-              onChangeText={setChatInput}
-              onSubmitEditing={handleSendMessage}
-              editable={!isSendingMessage}
-            />
-            <TouchableOpacity onPress={handleSendMessage} style={styles.sendButton} disabled={isSendingMessage}>
-              {isSendingMessage ? <ActivityIndicator color="#fff" /> : <Text style={styles.sendButtonText}>Send</Text>}
+          {/* Playback controls overlay */}
+          <View style={styles.videoControls}>
+            <TouchableOpacity style={styles.videoBtn} onPress={() => setIsMuted(!isMuted)}>
+              <Ionicons name={isMuted ? 'volume-mute' : 'volume-high'} size={20} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.playPauseBtn} onPress={() => setIsPaused(!isPaused)}>
+              <Ionicons name={isPaused ? 'play' : 'pause'} size={26} color="white" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.videoBtn}>
+              <Ionicons name="expand" size={20} color="white" />
             </TouchableOpacity>
           </View>
         </View>
-      </View>
+
+        {/* Participants Row */}
+        <FlatList
+          horizontal
+          data={participants}
+          renderItem={renderParticipant}
+          keyExtractor={(item) => item.id}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.participantsRow}
+          ListEmptyComponent={
+            <Text style={styles.noParticipants}>No participants</Text>
+          }
+        />
+
+        {/* Chat */}
+        {isChatVisible && (
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.chatArea}
+          >
+            <FlatList
+              ref={flatListRef}
+              data={chatMessages}
+              renderItem={renderMessage}
+              keyExtractor={(item) => item.id}
+              contentContainerStyle={styles.chatList}
+              onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+              ListEmptyComponent={
+                <Text style={styles.emptyChat}>Say something to the party! 🎉</Text>
+              }
+            />
+            <View style={styles.inputRow}>
+              <TextInput
+                style={styles.chatInput}
+                placeholder="Chat with the party…"
+                placeholderTextColor="#555"
+                value={chatInput}
+                onChangeText={setChatInput}
+                onSubmitEditing={handleSend}
+                editable={!isSending}
+                returnKeyType="send"
+              />
+              <TouchableOpacity
+                style={[styles.sendBtn, (!chatInput.trim() || isSending) && styles.sendBtnDisabled]}
+                onPress={handleSend}
+                disabled={!chatInput.trim() || isSending}
+              >
+                {isSending
+                  ? <ActivityIndicator size="small" color="white" />
+                  : <Ionicons name="send" size={16} color="white" />}
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        )}
+      </SafeAreaView>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  fullBackgroundImage: {
-    width: width,
-    height: height,
-    position: 'absolute',
-    opacity: 0.3,
-  },
-  overlay: {
-    flex: 1,
-    paddingTop: 60,
-    paddingHorizontal: 20,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000',
-  },
-  loadingText: {
-    color: 'white',
-    fontSize: 18,
-    marginTop: 10,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000',
-    padding: 20,
-  },
-  errorText: {
-    color: 'red',
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  backButtonText: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
-  },
-  screenTitle: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  moreOptionsIcon: {
-    color: 'white',
-    fontSize: 20,
-  },
-  videoPlayer: {
-    width: '100%',
-    height: height * 0.3, // Roughly 30% of screen height
-    backgroundColor: '#333',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 10,
-    marginBottom: 20,
-  },
-  videoPlaceholderText: {
-    color: 'white',
-    fontSize: 20,
-  },
-  participantsSection: {
-    marginBottom: 20,
-  },
-  participantItem: {
-    alignItems: 'center',
-    marginRight: 15,
-  },
-  participantAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    borderWidth: 2,
-    borderColor: '#1E90FF',
-    marginBottom: 5,
-  },
-  participantName: {
-    color: 'white',
-    fontSize: 12,
-  },
-  chatSection: {
-    flex: 1,
-  },
-  chatMessagesList: {
-    flexGrow: 1,
-    justifyContent: 'flex-end',
-  },
-  chatMessageContainer: {
-    backgroundColor: 'rgba(50,50,50,0.8)',
-    borderRadius: 10,
-    padding: 10,
-    marginBottom: 10,
-    maxWidth: '80%',
-  },
-  chatSender: {
-    color: '#1E90FF',
-    fontWeight: 'bold',
-    marginBottom: 5,
-  },
-  chatMessage: {
-    color: 'white',
-    fontSize: 14,
-  },
-  chatTime: {
-    color: '#888',
-    fontSize: 10,
-    alignSelf: 'flex-end',
-    marginTop: 5,
-  },
-  chatInputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  chatTextInput: {
-    flex: 1,
-    backgroundColor: '#333',
-    borderRadius: 25,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    color: 'white',
-    marginRight: 10,
-  },
-  sendButton: {
-    backgroundColor: '#1E90FF',
-    borderRadius: 25,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sendButtonText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
+  container: { flex: 1 },
+  safeArea: { flex: 1 },
+  centerContainer: { flex: 1, backgroundColor: DesignSystem.colors.backgroundPrimary, justifyContent: 'center', alignItems: 'center', gap: 16 },
+  loadingText: { color: DesignSystem.colors.textPrimary, fontSize: 16 },
+  errorText: { color: DesignSystem.colors.errorRed, fontSize: 16, fontWeight: '600' },
+  retryBtn: { backgroundColor: DesignSystem.colors.surfaceContainer, paddingHorizontal: 20, paddingVertical: 10, borderRadius: 20 },
+  retryText: { color: DesignSystem.colors.textPrimary, fontWeight: '600' },
+  header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10 },
+  headerBtn: { width: 40, height: 40, justifyContent: 'center', alignItems: 'center' },
+  headerCenter: { flex: 1, alignItems: 'center' },
+  headerTitle: { color: DesignSystem.colors.textPrimary, fontSize: 17, fontWeight: '700' },
+  headerSub: { color: DesignSystem.colors.textSecondary, fontSize: 12, marginTop: 2 },
+  videoPlayer: { marginHorizontal: 16, borderRadius: 16, overflow: 'hidden', height: height * 0.28 },
+  videoInner: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
+  videoPlaceholder: { color: DesignSystem.colors.textMuted, fontSize: 15 },
+  videoControls: { position: 'absolute', bottom: 0, left: 0, right: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', padding: 14, backgroundColor: 'rgba(0,0,0,0.6)' },
+  videoBtn: { width: 36, height: 36, justifyContent: 'center', alignItems: 'center' },
+  playPauseBtn: { width: 48, height: 48, borderRadius: 24, backgroundColor: DesignSystem.colors.primary, justifyContent: 'center', alignItems: 'center' },
+  participantsRow: { paddingHorizontal: 16, paddingVertical: 14, gap: 16 },
+  participantAvatar: { alignItems: 'center', width: 60 },
+  participantRing: { width: 50, height: 50, borderRadius: 25, padding: 2, justifyContent: 'center', alignItems: 'center' },
+  participantImg: { width: 44, height: 44, borderRadius: 22, backgroundColor: DesignSystem.colors.surfaceContainerHighest },
+  participantName: { color: DesignSystem.colors.textSecondary, fontSize: 11, marginTop: 5, textAlign: 'center' },
+  noParticipants: { color: DesignSystem.colors.textMuted, fontSize: 13, paddingLeft: 4 },
+  chatArea: { flex: 1, borderTopWidth: 1, borderTopColor: DesignSystem.colors.surfaceContainer },
+  chatList: { padding: 12, paddingBottom: 4 },
+  emptyChat: { color: DesignSystem.colors.textMuted, textAlign: 'center', marginTop: 20, fontSize: 14 },
+  msgRow: { marginBottom: 8, maxWidth: '78%' },
+  msgRowMe: { alignSelf: 'flex-end' },
+  msgRowThem: { alignSelf: 'flex-start' },
+  msgBubble: { borderRadius: 16, paddingHorizontal: 12, paddingVertical: 8 },
+  msgBubbleMe: { backgroundColor: DesignSystem.colors.primary, borderBottomRightRadius: 4 },
+  msgBubbleThem: { backgroundColor: DesignSystem.colors.surfaceContainer, borderBottomLeftRadius: 4 },
+  msgSender: { color: DesignSystem.colors.primary, fontSize: 11, fontWeight: '700', marginBottom: 3 },
+  msgText: { color: DesignSystem.colors.textPrimary, fontSize: 14, lineHeight: 19 },
+  inputRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10, borderTopWidth: 1, borderTopColor: DesignSystem.colors.surfaceContainer, backgroundColor: DesignSystem.colors.surface },
+  chatInput: { flex: 1, backgroundColor: DesignSystem.colors.surfaceContainerHighest, borderRadius: 20, paddingHorizontal: 14, paddingVertical: 9, color: DesignSystem.colors.textPrimary, fontSize: 14, marginRight: 10, maxHeight: 80 },
+  sendBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: DesignSystem.colors.primary, justifyContent: 'center', alignItems: 'center' },
+  sendBtnDisabled: { backgroundColor: DesignSystem.colors.surfaceContainerHighest },
 });
 
 export default WatchTogetherScreen;

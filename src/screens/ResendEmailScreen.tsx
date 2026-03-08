@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { SafeImage } from '../components/common/SafeImage';
 import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useForgotPasswordMutation } from '../store/api';
+import { useForgotPasswordV1AuthForgotPasswordPostMutation } from '../store/api';
 
 const { width, height } = Dimensions.get('window');
 
@@ -9,7 +10,7 @@ const ResendEmailScreen = () => {
   const router = useRouter();
   const [email, setEmail] = useState('');
 
-  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
+  const [forgotPassword, { isLoading }] = useForgotPasswordV1AuthForgotPasswordPostMutation();
 
   const validateEmail = (email: string) => {
     const re = /\S+@\S+\.\S+/;
@@ -27,7 +28,9 @@ const ResendEmailScreen = () => {
     }
 
     try {
-      const result = await forgotPassword({ email }).unwrap();
+      const result = await forgotPassword({
+        passwordReset: { email }
+      }).unwrap();
       console.log('Forgot password request successful:', result);
       Alert.alert('Success', 'If an account with that email exists, a password reset link has been sent.');
       router.back();
@@ -40,8 +43,8 @@ const ResendEmailScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Image
-        source={{/* require('../../assets/ui/extra/Resend Email.png') */}}
+      <SafeImage
+        source={{/* require('../../assets/ui/extra/Resend Email.png') */ }}
         style={styles.backgroundImage}
         resizeMode="cover"
       />

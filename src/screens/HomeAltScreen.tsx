@@ -1,16 +1,24 @@
 import React from 'react';
+import { SafeImage } from '../components/common/SafeImage';
 import { View, Text, StyleSheet, Image, Dimensions, ScrollView, TouchableOpacity, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useGetDiscoverContentQuery, useGetPublicRecommendationsQuery, useGetTrendingContentQuery } from '../store/api';
+import { Ionicons } from '@expo/vector-icons';
+import { DesignSystem } from '../theme/design_system';
+import {
+  usePublicDiscoverRootV1DiscoverPublicGetQuery,
+  usePublicRecommendationsRootV1RecommendationsPublicGetQuery,
+  usePublicTrendingV1DiscoverPublicTrendingGetQuery,
+} from '../store/api';
 
 const { width, height } = Dimensions.get('window');
 
 const HomeAltScreen = () => {
   const router = useRouter();
 
-  const { data: discoverContentData, error: discoverContentError, isLoading: isDiscoverContentLoading } = useGetDiscoverContentQuery();
-  const { data: publicRecommendationsData, error: publicRecommendationsError, isLoading: isPublicRecommendationsLoading } = useGetPublicRecommendationsQuery({ type: 'all' });
-  const { data: trendingContentData, error: trendingContentError, isLoading: isTrendingContentLoading } = useGetTrendingContentQuery({ type: 'all' });
+  const { data: discoverContentWrapper, error: discoverContentError, isLoading: isDiscoverContentLoading } = usePublicDiscoverRootV1DiscoverPublicGetQuery();
+  const { data: publicRecommendationsWrapper, error: publicRecommendationsError, isLoading: isPublicRecommendationsLoading } = usePublicRecommendationsRootV1RecommendationsPublicGetQuery({ genre: undefined, limit: undefined });
+  const { data: trendingContentWrapper, error: trendingContentError, isLoading: isTrendingContentLoading } = usePublicTrendingV1DiscoverPublicTrendingGetQuery({ contentType: 'all' });
+
 
   if (isDiscoverContentLoading || isPublicRecommendationsLoading || isTrendingContentLoading) {
     return (
@@ -32,12 +40,12 @@ const HomeAltScreen = () => {
     );
   }
 
-  const trendingNow = trendingContentData?.data?.content || [];
-  const recommendedForYou = publicRecommendationsData?.data?.content || [];
+  const trendingNow = trendingContentWrapper?.data?.content || [];
+  const recommendedForYou = publicRecommendationsWrapper?.data?.content || [];
 
   const renderContentCard = ({ item }: { item: any }) => (
     <TouchableOpacity style={styles.contentCard} onPress={() => router.push({ pathname: '/DetailsScreen', params: { id: item.id, type: item.type || 'track' } })}>
-      <Image source={{ uri: item.cover || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.contentCardImage} />
+      <SafeImage source={{ uri: item.cover || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.contentCardImage} />
       <Text style={styles.contentCardTitle}>{item.title || item.name}</Text>
       <Text style={styles.contentCardSubtitle}>{item.artist || item.type}</Text>
     </TouchableOpacity>
@@ -45,8 +53,8 @@ const HomeAltScreen = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <Image
-        source={{/* require('../../assets/ui/Home-1.png') */}}
+      <SafeImage
+        source={{/* require('../../assets/ui/Home-1.png') */ }}
         style={styles.fullBackgroundImage}
         resizeMode="cover"
       />
@@ -55,11 +63,11 @@ const HomeAltScreen = () => {
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Musicbud</Text>
           <View style={styles.headerIcons}>
-            <TouchableOpacity onPress={() => router.push('/SearchScreen')}>
-              <Text style={styles.headerIcon}>🔍</Text>
+            <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/SearchScreen')}>
+              <Ionicons name="search" size={24} color={DesignSystem.colors.textPrimary} />
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => router.push('/UserProfileScreen')}>
-              <Text style={styles.headerIcon}>⚙️</Text>
+            <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/UserProfileScreen')}>
+              <Ionicons name="settings" size={24} color={DesignSystem.colors.textPrimary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -97,7 +105,7 @@ const HomeAltScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
   },
   fullBackgroundImage: {
     width: width,
@@ -114,21 +122,21 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
   },
   loadingText: {
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 18,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
     padding: 20,
   },
   errorText: {
-    color: 'red',
+    color: DesignSystem.colors.errorRed,
     fontSize: 18,
     textAlign: 'center',
     marginBottom: 10,
@@ -140,25 +148,23 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   headerTitle: {
-    color: 'white',
-    fontSize: 28,
-    fontWeight: 'bold',
+    color: DesignSystem.colors.textPrimary,
+    ...DesignSystem.typography.headlineMedium,
   },
   headerIcons: {
     flexDirection: 'row',
+    alignItems: 'center',
   },
-  headerIcon: {
-    color: 'white',
-    fontSize: 24,
-    marginLeft: 20,
+  iconButton: {
+    padding: 10,
+    marginLeft: 10,
   },
   section: {
     marginBottom: 30,
   },
   sectionTitle: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
+    color: DesignSystem.colors.textPrimary,
+    ...DesignSystem.typography.titleLarge,
     marginBottom: 15,
   },
   contentCard: {
@@ -168,17 +174,17 @@ const styles = StyleSheet.create({
   contentCardImage: {
     width: 150,
     height: 150,
-    borderRadius: 10,
-    marginBottom: 5,
+    borderRadius: DesignSystem.radius.lg,
+    marginBottom: DesignSystem.spacing.xs,
   },
   contentCardTitle: {
-    color: 'white',
-    fontSize: 14,
+    color: DesignSystem.colors.textPrimary,
+    ...DesignSystem.typography.bodyLarge,
     fontWeight: 'bold',
   },
   contentCardSubtitle: {
-    color: '#888',
-    fontSize: 12,
+    color: DesignSystem.colors.textMuted,
+    ...DesignSystem.typography.bodyMedium,
   },
 });
 

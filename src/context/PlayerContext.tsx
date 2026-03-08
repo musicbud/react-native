@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { Audio, AVPlaybackStatus } from 'expo-av';
-import { Track } from '../store/api';
-
+import { Audio, AVPlaybackStatus, AVPlaybackStatusSuccess } from 'expo-av';
+// Type fallback: The OpenAPI generator does not build an explicit Track model from the Neo4j generic dict returns
+export type Track = any;
 interface PlayerContextType {
     currentTrack: Track | null;
     isPlaying: boolean;

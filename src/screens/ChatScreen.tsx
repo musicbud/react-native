@@ -1,55 +1,59 @@
 import React from 'react';
+import { SafeImage } from '../components/common/SafeImage';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, FlatList, ActivityIndicator, StatusBar } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useGetChatChannelsQuery, ChatChannel } from '../store/api';
+import { useChatSync } from '../hooks/useChatSync';
 import { LinearGradient } from 'expo-linear-gradient';
+import { DesignSystem } from '../theme/design_system';
+import { SectionHeader } from '../components/common/SectionHeader';
 
 const ChatScreen = () => {
   const router = useRouter();
-  const { data: channels, error: channelsError, isLoading: isChannelsLoading } = useGetChatChannelsQuery({});
+  const {
+    watchParties,
+    directMessages,
+    isConversationsLoading: isLoading,
+    conversationsError: chatError,
+    refetchConversations: refetch
+  } = useChatSync();
 
-  if (isChannelsLoading) {
+  if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <StatusBar barStyle="light-content" />
-        <ActivityIndicator size="large" color="#1E90FF" />
+        <ActivityIndicator size="large" color={DesignSystem.colors.primaryRed} />
       </View>
     );
   }
 
-  if (channelsError) {
+  if (chatError) {
     return (
       <View style={styles.errorContainer}>
         <StatusBar barStyle="light-content" />
         <Text style={styles.errorText}>Unable to load chats.</Text>
-        <TouchableOpacity style={styles.retryButton}>
+        <TouchableOpacity style={styles.retryButton} onPress={refetch}>
           <Text style={styles.retryButtonText}>Retry</Text>
         </TouchableOpacity>
       </View>
     );
   }
 
-  const conversations: ChatChannel[] = channels || [];
 
-  const watchParties = conversations.filter((conv: any) => conv.is_watch_party);
-  const messages = conversations.filter((conv: any) => !conv.is_watch_party);
 
   const renderWatchPartyItem = ({ item }: { item: any }) => (
     <TouchableOpacity style={styles.watchPartyItem} onPress={() => router.push(`/WatchPartyScreen/${item.id}` as any)}>
       <LinearGradient
-        colors={['#1E90FF', '#00BFFF']}
+        colors={[DesignSystem.colors.accentBlue, DesignSystem.colors.primaryContainer]}
         style={styles.watchPartyGradient}
       >
-        <Image source={{ uri: item.avatar_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.watchPartyAvatar} />
+        <SafeImage source={{ uri: item.avatar_url || item.image_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.watchPartyAvatar} />
       </LinearGradient>
       <Text style={styles.watchPartyName} numberOfLines={1}>{item.name || item.display_name}</Text>
     </TouchableOpacity>
   );
 
-  const renderMessageItem = ({ item }: { item: ChatChannel }) => {
-    // Determine display name and avatar (assuming 1-on-1 chat for now if no name)
-    // In a real app, logic would be more complex to find "other" participant
-    const otherParticipant = item.participants?.[0]; // Simplification
+  const renderMessageItem = ({ item }: { item: any }) => {
+    const otherParticipant = item.participants?.[0];
     const displayName = item.name || otherParticipant?.username || 'Unknown';
     const avatarUrl = otherParticipant?.avatar_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random';
 
@@ -60,10 +64,10 @@ const ChatScreen = () => {
         onPress={() => router.push(`/ChatDetailsScreen/${item.id}`)}
       >
         <LinearGradient
-          colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.02)']}
+          colors={[DesignSystem.colors.surfaceContainerHighest, DesignSystem.colors.surfaceContainer]}
           style={styles.messageItem}
         >
-          <Image source={{ uri: avatarUrl }} style={styles.messageAvatar} />
+          <SafeImage source={{ uri: avatarUrl }} style={styles.messageAvatar} />
           <View style={styles.messageDetails}>
             <View style={styles.messageHeader}>
               <Text style={styles.messageName}>{displayName}</Text>
@@ -75,7 +79,7 @@ const ChatScreen = () => {
             </View>
             <View style={styles.messageFooter}>
               <Text style={styles.lastMessage} numberOfLines={1}>
-                {item.last_message?.content || 'No messages yet'}
+                {item.last_message?.content || item.latest_message?.content || 'No messages yet'}
               </Text>
               {item.unread_count && item.unread_count > 0 ? (
                 <View style={styles.unreadBadge}>
@@ -103,7 +107,7 @@ const ChatScreen = () => {
         {/* Watch Parties Section */}
         {watchParties.length > 0 && (
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Watch Parties</Text>
+            <SectionHeader title="Watch Parties" style={{ paddingHorizontal: DesignSystem.spacing.md }} />
             <FlatList
               horizontal
               data={watchParties}
@@ -117,10 +121,10 @@ const ChatScreen = () => {
 
         {/* Messages Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Messages</Text>
-          {messages.length > 0 ? (
+          <SectionHeader title="Messages" style={{ paddingHorizontal: DesignSystem.spacing.md }} />
+          {directMessages.length > 0 ? (
             <FlatList
-              data={messages}
+              data={directMessages}
               keyExtractor={(item) => item.id}
               renderItem={renderMessageItem}
               scrollEnabled={false}
@@ -140,84 +144,75 @@ const ChatScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
   },
   header: {
     paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: DesignSystem.spacing.md,
+    paddingBottom: DesignSystem.spacing.md,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   screenTitle: {
-    color: 'white',
-    fontSize: 28,
-    fontWeight: '800',
-    letterSpacing: 0.5,
+    color: DesignSystem.colors.onSurface,
+    ...DesignSystem.typography.displaySmall,
   },
   newChatButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(30, 144, 255, 0.2)',
+    backgroundColor: 'rgba(233, 30, 99, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(30, 144, 255, 0.5)',
+    borderColor: 'rgba(233, 30, 99, 0.5)',
   },
   newChatText: {
-    color: '#1E90FF',
+    color: DesignSystem.colors.primaryRed,
     fontSize: 24,
     marginTop: -2,
     fontWeight: '300',
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   errorContainer: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   errorText: {
-    color: '#FF6B6B',
-    fontSize: 16,
-    marginBottom: 20,
+    color: DesignSystem.colors.errorRed,
+    ...DesignSystem.typography.bodyLarge,
+    marginBottom: DesignSystem.spacing.md,
   },
   retryButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: '#333',
-    borderRadius: 8,
+    paddingHorizontal: DesignSystem.spacing.lg,
+    paddingVertical: DesignSystem.spacing.sm,
+    backgroundColor: DesignSystem.colors.surfaceContainer,
+    borderRadius: DesignSystem.radius.sm,
   },
   retryButtonText: {
-    color: 'white',
-    fontSize: 14,
+    color: DesignSystem.colors.onSurface,
+    ...DesignSystem.typography.labelLarge,
   },
   scrollContent: {
     paddingBottom: 100,
   },
   section: {
-    marginBottom: 25,
-  },
-  sectionTitle: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 15,
-    paddingHorizontal: 20,
+    marginBottom: DesignSystem.spacing.lg,
   },
   watchPartyList: {
-    paddingHorizontal: 20,
+    paddingHorizontal: DesignSystem.spacing.md,
   },
   watchPartyItem: {
     alignItems: 'center',
-    marginRight: 20,
+    marginRight: DesignSystem.spacing.md,
     width: 70,
   },
   watchPartyGradient: {
@@ -227,19 +222,18 @@ const styles = StyleSheet.create({
     padding: 2,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: DesignSystem.spacing.xs,
   },
   watchPartyAvatar: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#333',
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
   },
   watchPartyName: {
-    color: 'white',
-    fontSize: 12,
+    color: DesignSystem.colors.onSurface,
+    ...DesignSystem.typography.labelSmall,
     textAlign: 'center',
-    fontWeight: '500',
   },
   messageItemContainer: {
     marginBottom: 2,
@@ -247,17 +241,17 @@ const styles = StyleSheet.create({
   messageItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
+    paddingVertical: DesignSystem.spacing.md,
+    paddingHorizontal: DesignSystem.spacing.md,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
+    borderBottomColor: DesignSystem.colors.borderColor,
   },
   messageAvatar: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    marginRight: 15,
-    backgroundColor: '#333',
+    marginRight: DesignSystem.spacing.md,
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
   },
   messageDetails: {
     flex: 1,
@@ -268,13 +262,12 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   messageName: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+    color: DesignSystem.colors.onSurface,
+    ...DesignSystem.typography.titleMedium,
   },
   messageTime: {
-    color: '#666',
-    fontSize: 12,
+    color: DesignSystem.colors.textMuted,
+    ...DesignSystem.typography.bodySmall,
   },
   messageFooter: {
     flexDirection: 'row',
@@ -282,13 +275,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   lastMessage: {
-    color: '#999',
-    fontSize: 14,
+    color: DesignSystem.colors.textSecondary,
+    ...DesignSystem.typography.bodyMedium,
     flex: 1,
     marginRight: 10,
   },
   unreadBadge: {
-    backgroundColor: '#1E90FF',
+    backgroundColor: DesignSystem.colors.primaryRed,
     minWidth: 20,
     height: 20,
     borderRadius: 10,
@@ -297,8 +290,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
   },
   unreadText: {
-    color: 'white',
-    fontSize: 10,
+    color: DesignSystem.colors.onPrimary,
+    ...DesignSystem.typography.labelSmall,
     fontWeight: 'bold',
   },
   emptyContainer: {
@@ -307,14 +300,13 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   emptyText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: DesignSystem.colors.onSurface,
+    ...DesignSystem.typography.titleLarge,
     marginBottom: 8,
   },
   emptySubText: {
-    color: '#888',
-    fontSize: 14,
+    color: DesignSystem.colors.textMuted,
+    ...DesignSystem.typography.bodyMedium,
   },
 });
 

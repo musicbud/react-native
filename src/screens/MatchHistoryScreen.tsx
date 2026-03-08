@@ -1,149 +1,116 @@
 import React from 'react';
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, FlatList } from 'react-native';
+import { SafeImage } from '../components/common/SafeImage';
+import { View, Text, Image, TouchableOpacity, FlatList, SafeAreaView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useGetMatchHistoryQuery } from '../store/api';
-
-const { width, height } = Dimensions.get('window');
+import { Ionicons } from '@expo/vector-icons';
+import { useGetMatchesV1MatchingMatchesGetQuery } from '../store/api';
+import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
+import { DesignSystem } from '../theme/design_system';
 
 const MatchHistoryScreen = () => {
   const router = useRouter();
-  const { data: matchHistoryData, error: matchHistoryError, isLoading: isMatchHistoryLoading } = useGetMatchHistoryQuery({});
+  const { data: matchHistoryWrapper, error: matchHistoryError, isLoading } = useGetMatchesV1MatchingMatchesGetQuery({});
 
-  if (isMatchHistoryLoading) {
+  if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading Match History...</Text>
+      <View className="flex-1 justify-center items-center bg-background">
+        <ActivityIndicator size="large" color={DesignSystem.colors.successGreen} />
       </View>
     );
   }
 
   if (matchHistoryError) {
-    console.error("Match History Error:", matchHistoryError);
     return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Failed to load Match History.</Text>
-        <Text style={styles.errorText}>Please check your backend server.</Text>
+      <View className="flex-1 justify-center items-center bg-background px-8">
+        <View className="w-20 h-20 bg-red-500/10 rounded-full items-center justify-center mb-6">
+          <Ionicons name="alert-circle" size={40} color={DesignSystem.colors.errorRed} />
+        </View>
+        <Text className="text-text-primary text-xl font-display font-bold text-center mb-2">Oops!</Text>
+        <Text className="text-text-secondary text-base font-sans text-center">Failed to load match history.</Text>
       </View>
     );
   }
 
-  const matchCards = matchHistoryData?.data?.matches || [];
+  const matches = matchHistoryWrapper?.data || [];
 
-  const renderMatchCard = ({ item }: { item: any }) => (
-    <TouchableOpacity style={styles.matchCard} onPress={() => router.push(`/BudProfile/${item.id}`)}>
-      <Image source={{ uri: item.avatar_url || item.avatar || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.matchCardImage} />
-      <Text style={styles.matchCardName} numberOfLines={1}>{item.display_name || item.name || item.username}</Text>
-      <Text style={styles.matchCardCommon} numberOfLines={1}>{item.compatibility_score ? `${item.compatibility_score}% Match` : 'New Match'}</Text>
-    </TouchableOpacity>
-  );
+  const renderMatchCard = ({ item, index }: { item: any, index: number }) => {
+    const avatarUrl = item.avatar_url || item.avatar
+      || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.display_name || item.name || 'Bud')}&background=1a1a2e&color=fff&size=300`;
+    const score = item.compatibility_score;
+
+    return (
+      <Animated.View
+        entering={FadeInDown.delay(index * 100).springify()}
+        className="flex-1 mx-2 mb-4"
+      >
+        <TouchableOpacity
+          className="aspect-[3/4] rounded-3xl overflow-hidden bg-background-layer1 shadow-lg border border-white/5"
+          activeOpacity={0.9}
+          onPress={() => router.push(`/UserProfileScreen/${item.id}` as any)}
+        >
+          <SafeImage source={{ uri: avatarUrl }} className="absolute w-full h-full" resizeMode="cover" />
+
+          <LinearGradient
+            colors={['transparent', DesignSystem.colors.backgroundDark]}
+            className="absolute bottom-0 left-0 right-0 h-1/2 justify-end p-4"
+          >
+            <Text className="text-white text-base font-display font-bold" numberOfLines={1}>
+              {item.display_name || item.name || item.username}
+            </Text>
+            <Text className="text-white/70 text-xs font-sans font-medium mt-0.5" numberOfLines={1}>
+              {item.common_genre || 'Music match'}
+            </Text>
+          </LinearGradient>
+
+          {score != null && (
+            <View className="absolute top-3 right-3 bg-primary/90 px-2.5 py-1 rounded-full backdrop-blur-md border border-white/20 shadow-sm">
+              <Text className="text-background font-sans font-bold text-[10px]">{score}%</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
 
   return (
-    <View style={styles.container}>
-      <Image
-        source={{/* require('../../assets/ui/extra/Match History.png') */ }}
-        style={styles.fullBackgroundImage}
-        resizeMode="cover"
-      />
-      <View style={styles.overlay}>
-        <Text style={styles.screenTitle}>Match Recommendations</Text>
+    <View className="flex-1 bg-background">
+      <SafeAreaView className="flex-1">
+        <Animated.View entering={FadeIn.duration(400)} className="flex-row items-center justify-between px-6 pt-4 pb-6">
+          <Text className="text-text-primary text-3xl font-display font-bold tracking-tight">Matches</Text>
+          <View className="bg-background-layer2 rounded-full px-3 py-1.5 border border-surface-border">
+            <Text className="text-text-secondary text-xs font-sans font-bold">{matches.length} total</Text>
+          </View>
+        </Animated.View>
 
         <FlatList
-          data={matchCards}
+          data={matches}
           renderItem={renderMatchCard}
           keyExtractor={(item, index) => item.id || index.toString()}
           numColumns={2}
-          contentContainerStyle={styles.matchGrid}
-          columnWrapperStyle={matchCards.length > 0 ? styles.matchGridColumnWrapper : undefined}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
           ListEmptyComponent={
-            <View style={{ alignItems: 'center', marginTop: 50 }}>
-              <Text style={{ color: '#888', fontSize: 16 }}>No matches found yet.</Text>
-              <Text style={{ color: '#666', fontSize: 14, marginTop: 10 }}>Start swiping to find your Buds!</Text>
-            </View>
+            <Animated.View entering={FadeIn.delay(300)} className="items-center mt-20 px-8">
+              <View className="w-24 h-24 bg-background-layer1 rounded-full items-center justify-center mb-6">
+                <Ionicons name="heart" size={40} color={DesignSystem.colors.successGreen} opacity={0.8} />
+              </View>
+              <Text className="text-text-primary text-2xl font-display font-bold mb-3">No matches yet</Text>
+              <Text className="text-text-secondary text-base font-sans text-center mb-8 leading-relaxed">
+                Start swiping on the discovery feed to connect with other music lovers!
+              </Text>
+              <TouchableOpacity
+                className="bg-primary px-8 py-3.5 rounded-full shadow-lg shadow-primary/30"
+                onPress={() => router.push('/(tabs)/MatchingScreen' as any)}
+              >
+                <Text className="text-background font-sans font-bold text-lg">Find Buds</Text>
+              </TouchableOpacity>
+            </Animated.View>
           }
         />
-      </View>
+      </SafeAreaView>
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  fullBackgroundImage: {
-    width: width,
-    height: height,
-    position: 'absolute',
-    opacity: 0.3,
-  },
-  overlay: {
-    flex: 1,
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    alignItems: 'center',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000',
-  },
-  loadingText: {
-    color: 'white',
-    fontSize: 18,
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000',
-    padding: 20,
-  },
-  errorText: {
-    color: 'red',
-    fontSize: 18,
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  screenTitle: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  matchGrid: {
-    justifyContent: 'space-between',
-    paddingBottom: 20,
-  },
-  matchGridColumnWrapper: {
-    justifyContent: 'space-around',
-  },
-  matchCard: {
-    backgroundColor: 'rgba(30,30,30,0.8)',
-    borderRadius: 10,
-    width: width * 0.4,
-    padding: 10,
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-  matchCardImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
-  },
-  matchCardName: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  matchCardCommon: {
-    color: '#CCC',
-    fontSize: 12,
-    textAlign: 'center',
-  },
-});
 
 export default MatchHistoryScreen;

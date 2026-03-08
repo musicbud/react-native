@@ -1,9 +1,20 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, FlatList, TextInput, StatusBar, ActivityIndicator, Modal, Alert } from 'react-native';
+import { SafeImage } from '../components/common/SafeImage';
+import { View, Text, Image, ScrollView, TouchableOpacity, FlatList, TextInput, StatusBar, ActivityIndicator, Modal, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useGetGenresQuery, useGetDiscoverContentQuery, useGetTrendingContentQuery, useGetUserPlaylistsQuery, useAddTrackToPlaylistMutation } from '../store/api';
+import {
+  usePublicGenresV1DiscoverPublicGenresGetQuery,
+  usePublicDiscoverRootV1DiscoverPublicGetQuery,
+  usePublicTrendingV1DiscoverPublicTrendingGetQuery,
+  useGetMyPlaylistsV1PlaylistsPlaylistsMeGetQuery,
+  useAddTrackToPlaylistV1LibraryPlaylistsPlaylistIdTracksPostMutation
+} from '../store/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import { usePlayer } from '../context/PlayerContext';
+import { Ionicons } from '@expo/vector-icons';
+import { SectionHeader } from '../components/common/SectionHeader';
+import { MediaCarousel } from '../components/common/MediaCarousel';
+import { DesignSystem } from '../theme/design_system';
 
 const DiscoverScreen = () => {
   const router = useRouter();
@@ -14,45 +25,48 @@ const DiscoverScreen = () => {
   const [isAddToPlaylistModalVisible, setAddToPlaylistModalVisible] = useState(false);
 
   // Fetch data
-  const { data: genresData, isLoading: isGenresLoading } = useGetGenresQuery();
-  const { data: discoverContentData, isLoading: isDiscoverContentLoading } = useGetDiscoverContentQuery();
-  const { data: trendingTracksData, isLoading: isTrendingTracksLoading } = useGetTrendingContentQuery({ type: 'tracks' });
-  const { data: playlistsData, isLoading: isPlaylistsLoading } = useGetUserPlaylistsQuery();
+  const { data: genresWrapper, isLoading: isGenresLoading } = usePublicGenresV1DiscoverPublicGenresGetQuery({});
+  const { data: discoverContentWrapper, isLoading: isDiscoverContentLoading } = usePublicDiscoverRootV1DiscoverPublicGetQuery();
+  const { data: trendingTracksWrapper, isLoading: isTrendingTracksLoading } = usePublicTrendingV1DiscoverPublicTrendingGetQuery({ contentType: 'tracks' });
+  const { data: playlistsWrapper, isLoading: isPlaylistsLoading } = useGetMyPlaylistsV1PlaylistsPlaylistsMeGetQuery();
 
-  const [addTrackToPlaylist, { isLoading: isAddingTrack }] = useAddTrackToPlaylistMutation();
+  const [addTrackToPlaylist, { isLoading: isAddingTrack }] = useAddTrackToPlaylistV1LibraryPlaylistsPlaylistIdTracksPostMutation();
 
   // Handle loading
   if (isGenresLoading || isDiscoverContentLoading || isTrendingTracksLoading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View className="flex-1 justify-center items-center bg-background">
         <StatusBar barStyle="light-content" />
-        <ActivityIndicator size="large" color="#1E90FF" />
+        <ActivityIndicator size="large" color={DesignSystem.colors.primary} />
       </View>
     );
   }
 
-  const musicGenres = genresData?.data?.music || [];
-  const recommendedPlaylists = discoverContentData?.data?.featured_playlists || [];
-  const recentFavorites = trendingTracksData?.data?.tracks || [];
+  const musicGenres = genresWrapper?.data?.music || [];
+  const popularArtists = discoverContentWrapper?.data?.popular_artists || [];
+  const recentFavorites = trendingTracksWrapper?.data?.tracks || [];
 
-  const renderPlaylistItem = ({ item }: { item: any }) => (
-    <TouchableOpacity onPress={() => router.push({ pathname: '/DetailsScreen', params: { id: item.id, type: 'playlist' } })}>
-      <LinearGradient
-        colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']}
-        style={styles.playlistItem}
-      >
-        <Image source={{ uri: item.cover_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.playlistCover} />
-        <Text style={styles.playlistTitle} numberOfLines={1}>{item.name}</Text>
-        <Text style={styles.playlistArtist} numberOfLines={1}>{item.owner?.display_name || 'MusicBud'}</Text>
-      </LinearGradient>
-    </TouchableOpacity>
-  );
+  const playlistsData = playlistsWrapper?.data || [];
+
+  const handleTrackPress = (track: any) => {
+    playTrack(track);
+    router.push({ pathname: '/DetailsScreen', params: { id: track.id, type: 'track' } });
+  };
+
+  const handleArtistPress = (artist: any) => {
+    router.push({ pathname: '/DetailsScreen', params: { id: artist.id, type: 'artist' } });
+  };
+
+  const handleOptionsPress = (track: any) => {
+    setSelectedTrackId(track.id);
+    setAddToPlaylistModalVisible(true);
+  };
 
   const handleAddToPlaylist = async (playlistId: string) => {
     if (!selectedTrackId) return;
 
     try {
-      await addTrackToPlaylist({ playlistId, trackId: selectedTrackId }).unwrap();
+      await addTrackToPlaylist({ playlistId, trackData: { track_id: selectedTrackId } }).unwrap();
       Alert.alert('Success', 'Track added to playlist!');
       setAddToPlaylistModalVisible(false);
       setSelectedTrackId(null);
@@ -62,111 +76,77 @@ const DiscoverScreen = () => {
     }
   };
 
-  const renderFavoriteItem = ({ item }: { item: any }) => (
-    <View style={styles.favoriteItemWrapper}>
-      <TouchableOpacity onPress={() => {
-        playTrack(item);
-        router.push({ pathname: '/DetailsScreen', params: { id: item.id, type: 'track' } });
-      }}>
-        <LinearGradient
-          colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.05)']}
-          style={styles.favoriteItem}
-        >
-          <Image source={{ uri: item.cover_url || 'https://ui-avatars.com/api/?name=Music+Bud&background=random' }} style={styles.favoriteCover} />
-          <Text style={styles.favoriteTitle} numberOfLines={1}>{item.name}</Text>
-          <Text style={styles.favoriteArtist} numberOfLines={1}>{item.artist}</Text>
-        </LinearGradient>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.optionsButton}
-        onPress={() => {
-          setSelectedTrackId(item.id);
-          setAddToPlaylistModalVisible(true);
-        }}
-        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-      >
-        <Text style={styles.optionsIcon}>⋮</Text>
-      </TouchableOpacity>
-    </View>
-  );
-
   const renderGenreItem = ({ item }: { item: any }) => (
     <TouchableOpacity onPress={() => router.push(`/SearchScreen?category=${item.name}`)}>
       <LinearGradient
-        colors={['#1E90FF', '#007AFF']}
+        colors={[DesignSystem.colors.surfaceContainerHigh, DesignSystem.colors.surfaceContainer]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
-        style={styles.genreItem}
+        className="rounded-full py-2 px-4 mr-2 mb-2 border border-surface-border"
       >
-        <Text style={styles.genreText}>{item.name}</Text>
+        <Text className="text-text-primary font-sans font-medium text-sm">{item.name}</Text>
       </LinearGradient>
     </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
+    <View className="flex-1 bg-background">
       <StatusBar barStyle="light-content" />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <LinearGradient
-          colors={['rgba(30,30,30,0.8)', '#000']}
-          style={styles.headerGradient}
-        >
-          <Text style={styles.screenTitle}>Discover</Text>
+      <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
 
-          <View style={styles.searchBarContainer}>
-            <TextInput
-              style={styles.searchBarInput}
-              placeholder="Search songs, artists, albums..."
-              placeholderTextColor="#888"
-              value={searchText}
-              onChangeText={setSearchText}
-              onSubmitEditing={() => router.push(`/SearchScreen?q=${searchText}`)}
-            />
+        {/* Header Hero Section */}
+        <LinearGradient
+          colors={['rgba(76, 175, 80, 0.12)', 'transparent']}
+          className="pt-16 px-6 pb-8 rounded-b-[48px]"
+        >
+          <Text className="text-text-primary font-display font-bold text-4xl mb-6 tracking-tight">
+            Discover
+          </Text>
+
+          <View className="mb-2">
+            <View className="h-14 bg-background-layer1/80 rounded-2xl px-5 border border-white/5 flex-row items-center backdrop-blur-md">
+              <Ionicons name="search" size={20} color={DesignSystem.colors.textMuted} />
+              <TextInput
+                className="flex-1 text-text-primary font-sans text-base ml-3"
+                placeholder="Find tracks, artists, moods..."
+                placeholderTextColor={DesignSystem.colors.textMuted}
+                value={searchText}
+                onChangeText={setSearchText}
+                onSubmitEditing={() => router.push(`/SearchScreen?q=${searchText}`)}
+              />
+            </View>
           </View>
         </LinearGradient>
 
-        <View style={styles.contentSection}>
-          {/* Recommended Playlists */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Featured Playlists</Text>
-            <FlatList
-              horizontal
-              data={recommendedPlaylists}
-              keyExtractor={(item) => item.id}
-              renderItem={renderPlaylistItem}
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.listContent}
-              ListEmptyComponent={<Text style={styles.emptyText}>No playlists available right now.</Text>}
-            />
-          </View>
+        <View className="pt-6">
+          <MediaCarousel
+            title="Popular Artists"
+            data={popularArtists}
+            onItemPress={handleArtistPress}
+            emptyText="No popular artists found."
+          />
 
-          {/* Recent Favorites / Trending */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Trending Tracks</Text>
-            <FlatList
-              horizontal
-              data={recentFavorites}
-              keyExtractor={(item) => item.id}
-              renderItem={renderFavoriteItem}
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.listContent}
-              ListEmptyComponent={<Text style={styles.emptyText}>No trending tracks found.</Text>}
-            />
-          </View>
+          <MediaCarousel
+            title="Trending Tracks"
+            data={recentFavorites}
+            size="small"
+            onItemPress={handleTrackPress}
+            onItemMorePress={handleOptionsPress}
+            emptyText="No trending tracks available."
+          />
 
           {/* Music Genres */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Browse Genres</Text>
-            <FlatList
-              horizontal
-              data={musicGenres}
-              keyExtractor={(item) => item.id}
-              renderItem={renderGenreItem}
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.listContent}
-              ListEmptyComponent={<Text style={styles.emptyText}>Genres are currently unavailable.</Text>}
-            />
+          <View className="mb-8">
+            <SectionHeader title="Browse Genres" style={{ paddingHorizontal: 16 }} />
+            <View className="flex-row flex-wrap px-4 mt-3">
+              {musicGenres.length > 0 ? (
+                musicGenres.map((genre: any) => (
+                  <View key={genre.id}>{renderGenreItem({ item: genre })}</View>
+                ))
+              ) : (
+                <Text className="text-text-secondary font-sans italic py-4 text-center w-full">Genres are currently unavailable.</Text>
+              )}
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -178,244 +158,61 @@ const DiscoverScreen = () => {
         visible={isAddToPlaylistModalVisible}
         onRequestClose={() => setAddToPlaylistModalVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={styles.bottomSheet}>
-            <View style={styles.sheetHeader}>
-              <Text style={styles.sheetTitle}>Add to Playlist</Text>
-              <TouchableOpacity onPress={() => setAddToPlaylistModalVisible(false)}>
-                <Text style={styles.closeButton}>✕</Text>
+        <View className="flex-1 bg-black/70 justify-end">
+          <View className="bg-[#181A20] rounded-t-[40px] p-8 pb-12 border-t border-white/5 shadow-2xl">
+            <View className="w-12 h-1.5 bg-white/10 rounded-full self-center mb-8" />
+
+            <View className="flex-row justify-between items-center mb-8">
+              <Text className="text-text-primary font-display font-bold text-3xl">Add to Playlist</Text>
+              <TouchableOpacity
+                onPress={() => setAddToPlaylistModalVisible(false)}
+                className="w-10 h-10 bg-white/5 rounded-full items-center justify-center border border-white/10"
+              >
+                <Ionicons name="close" size={24} color="white" />
               </TouchableOpacity>
             </View>
 
             {isPlaylistsLoading ? (
-              <ActivityIndicator color="#1E90FF" style={{ marginVertical: 30 }} />
+              <ActivityIndicator color="#E11D48" className="my-10" />
             ) : (!playlistsData || playlistsData.length === 0) ? (
-              <Text style={styles.emptyPlaylistsText}>You don&apos;t have any playlists yet.</Text>
+              <View className="items-center my-10 px-8">
+                <View className="w-16 h-16 bg-white/5 rounded-full items-center justify-center mb-4">
+                  <Ionicons name="musical-notes-outline" size={32} color="#4B5563" />
+                </View>
+                <Text className="text-text-secondary text-center font-sans text-lg">You don&apos;t have any playlists yet.</Text>
+              </View>
             ) : (
               <FlatList
                 data={playlistsData}
                 keyExtractor={(item) => item.id}
-                style={{ maxHeight: 300 }}
+                style={{ maxHeight: 380 }}
                 renderItem={({ item }) => (
                   <TouchableOpacity
-                    style={styles.playlistRow}
+                    className="flex-row items-center py-4 px-4 bg-white/5 rounded-2xl mb-3 border border-white/5"
                     onPress={() => handleAddToPlaylist(item.id)}
                     disabled={isAddingTrack}
                   >
-                    <Image
+                    <SafeImage
                       source={{ uri: item.cover_url || 'https://ui-avatars.com/api/?name=Music+Bud&background=random' }}
-                      style={styles.rowCover}
+                      className="w-16 h-16 rounded-xl mr-4"
                     />
-                    <Text style={styles.rowTitle} numberOfLines={1}>{item.name}</Text>
+                    <View className="flex-1">
+                      <Text className="text-text-primary font-sans font-bold text-lg" numberOfLines={1}>{item.name}</Text>
+                      <Text className="text-text-secondary font-sans text-sm">{item.track_count || 0} tracks</Text>
+                    </View>
+                    <View className="w-10 h-10 rounded-full bg-primary/10 items-center justify-center">
+                      <Ionicons name="add" size={24} color="#4ADE80" />
+                    </View>
                   </TouchableOpacity>
                 )}
+                showsVerticalScrollIndicator={false}
               />
             )}
           </View>
         </View>
       </Modal>
-
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000',
-  },
-  scrollContent: {
-    paddingBottom: 40,
-  },
-  headerGradient: {
-    paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
-  },
-  screenTitle: {
-    color: 'white',
-    fontSize: 28,
-    fontWeight: '800',
-    marginBottom: 20,
-  },
-  searchBarContainer: {
-    marginBottom: 10,
-  },
-  searchBarInput: {
-    height: 50,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 25,
-    paddingHorizontal: 20,
-    color: 'white',
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-  contentSection: {
-    paddingTop: 20,
-  },
-  section: {
-    marginBottom: 30,
-  },
-  sectionTitle: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: '700',
-    marginBottom: 15,
-    paddingHorizontal: 20,
-  },
-  listContent: {
-    paddingHorizontal: 20,
-  },
-  playlistItem: {
-    marginRight: 15,
-    width: 140,
-    borderRadius: 16,
-    padding: 10,
-  },
-  playlistCover: {
-    width: 120,
-    height: 120,
-    borderRadius: 12,
-    marginBottom: 10,
-    alignSelf: 'center',
-  },
-  playlistTitle: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: 'bold',
-    marginBottom: 4,
-  },
-  playlistArtist: {
-    color: '#aaa',
-    fontSize: 12,
-  },
-  favoriteItemWrapper: {
-    marginRight: 15,
-    width: 140,
-    position: 'relative',
-  },
-  favoriteItem: {
-    borderRadius: 16,
-    padding: 10,
-    width: '100%',
-  },
-  favoriteCover: {
-    width: 120,
-    height: 120,
-    borderRadius: 12,
-    marginBottom: 10,
-    alignSelf: 'center',
-  },
-  favoriteTitle: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  favoriteArtist: {
-    color: '#888',
-    fontSize: 12,
-    marginTop: 4,
-    textAlign: 'center',
-    paddingHorizontal: 8,
-  },
-  optionsButton: {
-    position: 'absolute',
-    top: 5,
-    right: 5,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  optionsIcon: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  genreItem: {
-    borderRadius: 25,
-    paddingVertical: 12,
-    paddingHorizontal: 25,
-    marginRight: 12,
-    marginBottom: 10,
-  },
-  genreText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  emptyText: {
-    color: '#888',
-    fontSize: 14,
-    fontStyle: 'italic',
-    paddingVertical: 20,
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.7)',
-    justifyContent: 'flex-end',
-  },
-  bottomSheet: {
-    backgroundColor: '#1E1E1E',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: 20,
-    paddingBottom: 40,
-  },
-  sheetHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  sheetTitle: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  closeButton: {
-    color: '#888',
-    fontSize: 24,
-    padding: 5,
-  },
-  emptyPlaylistsText: {
-    color: '#888',
-    textAlign: 'center',
-    marginVertical: 40,
-    fontSize: 16,
-  },
-  playlistRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255,255,255,0.05)',
-  },
-  rowCover: {
-    width: 50,
-    height: 50,
-    borderRadius: 8,
-    marginRight: 15,
-  },
-  rowTitle: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '500',
-    flex: 1,
-  },
-});
 
 export default DiscoverScreen;

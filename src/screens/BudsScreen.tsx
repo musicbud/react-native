@@ -1,18 +1,21 @@
 import React from 'react';
+import { SafeImage } from '../components/common/SafeImage';
 import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, ActivityIndicator, StatusBar } from 'react-native';
 import { useRouter } from 'expo-router';
-import { useGetConnectionsQuery, User } from '../store/api';
+import { useMatching } from '../hooks/useMatching';
 import { LinearGradient } from 'expo-linear-gradient';
+import { DesignSystem } from '../theme/design_system';
+import { ModernButton } from '../components/common/ModernButton';
 
 const BudsScreen = () => {
   const router = useRouter();
-  const { data: connectionsData, error: connectionsError, isLoading: isConnectionsLoading } = useGetConnectionsQuery({ limit: 100 });
+  const { connections, connectionsError, isConnectionsLoading } = useMatching();
 
   if (isConnectionsLoading) {
     return (
       <View style={styles.loadingContainer}>
         <StatusBar barStyle="light-content" />
-        <ActivityIndicator size="large" color="#1E90FF" />
+        <ActivityIndicator size="large" color={DesignSystem.colors.primaryRed} />
       </View>
     );
   }
@@ -22,26 +25,23 @@ const BudsScreen = () => {
       <View style={styles.errorContainer}>
         <StatusBar barStyle="light-content" />
         <Text style={styles.errorText}>Unable to load connections.</Text>
-        <TouchableOpacity style={styles.retryButton}>
-          <Text style={styles.retryButtonText}>Retry</Text>
-        </TouchableOpacity>
+        <ModernButton text="Retry" variant="secondary" onPressed={() => { }} />
       </View>
     );
   }
 
-  const connections: User[] = connectionsData || [];
 
-  const renderBudItem = ({ item }: { item: User }) => (
+  const renderBudItem = ({ item }: { item: any }) => (
     <TouchableOpacity
       activeOpacity={0.7}
       style={styles.budItemContainer}
       onPress={() => router.push(`/UserProfileScreen/${item.id}`)}
     >
       <LinearGradient
-        colors={['rgba(255,255,255,0.05)', 'rgba(255,255,255,0.02)']}
+        colors={[DesignSystem.colors.surfaceContainerHighest, DesignSystem.colors.surfaceContainer]}
         style={styles.budItem}
       >
-        <Image source={{ uri: item.avatar_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.budAvatar} />
+        <SafeImage source={{ uri: item.avatar_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.budAvatar} />
         <View style={styles.budDetails}>
           <Text style={styles.budName}>{item.first_name ? `${item.first_name} ${item.last_name || ''}` : item.username}</Text>
           <Text style={styles.budUsername}>@{item.username}</Text>
@@ -72,9 +72,11 @@ const BudsScreen = () => {
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>No connections yet.</Text>
             <Text style={styles.emptySubText}>Start swiping to find your music buds!</Text>
-            <TouchableOpacity style={styles.findButton} onPress={() => router.push('/(tabs)/MatchingScreen' as any)}>
-              <Text style={styles.findButtonText}>Find Buds</Text>
-            </TouchableOpacity>
+            <ModernButton
+              text="Find Buds"
+              onPressed={() => router.push('/(tabs)/MatchingScreen' as any)}
+              style={styles.findButton}
+            />
           </View>
         }
       />
@@ -85,110 +87,97 @@ const BudsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
   },
   header: {
     paddingTop: 60,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingHorizontal: DesignSystem.spacing.md,
+    paddingBottom: DesignSystem.spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
   },
   screenTitle: {
-    color: 'white',
-    fontSize: 28,
-    fontWeight: '800',
-    letterSpacing: 0.5,
+    color: DesignSystem.colors.onSurface,
+    ...DesignSystem.typography.displaySmall,
   },
   headerBadge: {
-    backgroundColor: '#333',
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 12,
+    borderRadius: DesignSystem.radius.sm,
     marginLeft: 10,
   },
   headerBadgeText: {
-    color: '#1E90FF',
+    color: DesignSystem.colors.primaryRed,
+    ...DesignSystem.typography.labelLarge,
     fontWeight: 'bold',
-    fontSize: 14,
   },
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   errorContainer: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
     justifyContent: 'center',
     alignItems: 'center',
   },
   errorText: {
-    color: '#FF6B6B',
-    fontSize: 16,
-    marginBottom: 20,
-  },
-  retryButton: {
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: '#333',
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: 'white',
-    fontSize: 14,
+    color: DesignSystem.colors.errorRed,
+    ...DesignSystem.typography.bodyLarge,
+    marginBottom: DesignSystem.spacing.md,
   },
   budsList: {
-    paddingHorizontal: 20,
-    paddingBottom: 40,
+    paddingHorizontal: DesignSystem.spacing.md,
+    paddingBottom: DesignSystem.spacing.xl,
   },
   budItemContainer: {
-    marginBottom: 12,
-    borderRadius: 16,
+    marginBottom: DesignSystem.spacing.sm,
+    borderRadius: DesignSystem.radius.lg,
     overflow: 'hidden',
   },
   budItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    borderRadius: 16,
+    padding: DesignSystem.spacing.md,
+    borderRadius: DesignSystem.radius.lg,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.05)',
+    borderColor: DesignSystem.colors.borderColor,
   },
   budAvatar: {
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#333',
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: DesignSystem.colors.borderColor,
   },
   budDetails: {
     flex: 1,
-    marginLeft: 16,
+    marginLeft: DesignSystem.spacing.md,
   },
   budName: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '700',
+    color: DesignSystem.colors.onSurface,
+    ...DesignSystem.typography.titleMedium,
     marginBottom: 2,
   },
   budUsername: {
-    color: '#888',
-    fontSize: 14,
+    color: DesignSystem.colors.textMuted,
+    ...DesignSystem.typography.bodySmall,
   },
   actionButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: 'rgba(30, 144, 255, 0.1)',
-    borderRadius: 20,
+    paddingHorizontal: DesignSystem.spacing.md,
+    paddingVertical: DesignSystem.spacing.xs,
+    backgroundColor: 'rgba(233, 30, 99, 0.1)',
+    borderRadius: DesignSystem.radius.xl,
     borderWidth: 1,
-    borderColor: 'rgba(30, 144, 255, 0.3)',
+    borderColor: 'rgba(233, 30, 99, 0.3)',
   },
   actionButtonText: {
-    color: '#1E90FF',
-    fontSize: 12,
+    color: DesignSystem.colors.primaryRed,
+    ...DesignSystem.typography.labelMedium,
     fontWeight: '600',
   },
   emptyContainer: {
@@ -196,27 +185,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   emptyText: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
+    color: DesignSystem.colors.onSurface,
+    ...DesignSystem.typography.titleLarge,
+    marginBottom: DesignSystem.spacing.xs,
   },
   emptySubText: {
-    color: '#888',
-    fontSize: 16,
+    color: DesignSystem.colors.textMuted,
+    ...DesignSystem.typography.bodyMedium,
     textAlign: 'center',
-    marginBottom: 30,
+    marginBottom: DesignSystem.spacing.xl,
   },
   findButton: {
-    backgroundColor: '#1E90FF',
-    paddingHorizontal: 30,
-    paddingVertical: 15,
-    borderRadius: 25,
-  },
-  findButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+    paddingHorizontal: DesignSystem.spacing.xl,
+    borderRadius: DesignSystem.radius.full,
   },
 });
 

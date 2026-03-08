@@ -1,7 +1,14 @@
 import React from 'react';
+import { SafeImage } from '../components/common/SafeImage';
 import { View, Text, StyleSheet, Image, Dimensions, ScrollView, TouchableOpacity, FlatList } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useGetUserProfileQuery, useGetUserActivityQuery, useGetMyProfileQuery } from '../store/api';
+import { Ionicons } from '@expo/vector-icons';
+import { DesignSystem } from '../theme/design_system';
+import {
+  useGetUserProfileByIdV1UsersProfileUserIdGetQuery,
+  useGetRecentActivityV1UsersActivityRecentGetQuery,
+  useGetCurrentUserInfoV1AuthMeGetQuery
+} from '../store/api';
 
 const { width, height } = Dimensions.get('window');
 
@@ -10,17 +17,19 @@ const UserProfileAltScreen = () => {
   const params = useLocalSearchParams();
   const routeUserId = params.id as string | undefined;
 
-  // If no ID is passed, assume we are viewing "My" profile but fallback gracefully
-  const { data: myProfile } = useGetMyProfileQuery(undefined, { skip: !!routeUserId });
+  const { data: myProfileWrapper } = useGetCurrentUserInfoV1AuthMeGetQuery(undefined, { skip: !!routeUserId });
+  const myProfile = myProfileWrapper?.data;
   const userId = routeUserId || myProfile?.id;
 
-  const { data: userProfileData, error: userProfileError, isLoading: isUserProfileLoading } = useGetUserProfileQuery(userId as string, {
-    skip: !userId, // Skip if we don't know the ID yet
-  });
+  const { data: userProfileData, error: userProfileError, isLoading: isUserProfileLoading } = useGetUserProfileByIdV1UsersProfileUserIdGetQuery(
+    { userId: userId as string },
+    { skip: !userId }
+  );
 
-  const { data: userActivityData, error: userActivityError, isLoading: isUserActivityLoading } = useGetUserActivityQuery({ userId: userId as string }, {
-    skip: !userId,
-  });
+  const { data: userActivityData, error: userActivityError, isLoading: isUserActivityLoading } = useGetRecentActivityV1UsersActivityRecentGetQuery(
+    { limit: 10 },
+    { skip: !userId }
+  );
 
   const isLoading = isUserProfileLoading || isUserActivityLoading || (!userId && !myProfile);
 
@@ -54,7 +63,7 @@ const UserProfileAltScreen = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <Image
+      <SafeImage
         source={{/* require('../../assets/ui/extra/User Profile-1.png') */ }}
         style={styles.fullBackgroundImage}
         resizeMode="cover"
@@ -63,7 +72,7 @@ const UserProfileAltScreen = () => {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
-            <Text style={styles.backButtonText}>←</Text>
+            <Ionicons name="arrow-back" size={24} color={DesignSystem.colors.textPrimary} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Profile</Text>
           {(!routeUserId || routeUserId === myProfile?.id) && (
@@ -75,7 +84,7 @@ const UserProfileAltScreen = () => {
 
         {/* Profile Header */}
         <View style={styles.profileHeader}>
-          <Image source={{ uri: userData.avatar_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.profileImage} />
+          <SafeImage source={{ uri: userData.avatar_url || 'https://ui-avatars.com/api/?name=Music+Bud\&background=random' }} style={styles.profileImage} />
           <Text style={styles.nameText}>{userData.display_name || userData.username || 'Music Bud'}</Text>
           <Text style={styles.usernameText}>@{userData.username || 'user'}</Text>
           <Text style={styles.bioText}>{userData.bio || 'This user has no biography available.'}</Text>
@@ -118,7 +127,7 @@ const UserProfileAltScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
   },
   fullBackgroundImage: {
     width: width,
@@ -129,50 +138,44 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     paddingTop: 60,
-    paddingHorizontal: 20,
+    paddingHorizontal: DesignSystem.spacing.md,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
   },
   loadingText: {
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 18,
   },
   errorContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
-    padding: 20,
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
+    padding: DesignSystem.spacing.md,
   },
   errorText: {
-    color: 'red',
-    fontSize: 18,
+    color: DesignSystem.colors.errorRed,
+    ...DesignSystem.typography.bodyLarge,
     textAlign: 'center',
-    marginBottom: 10,
+    marginBottom: DesignSystem.spacing.xs,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
-  },
-  backButtonText: {
-    color: 'white',
-    fontSize: 24,
-    fontWeight: 'bold',
+    marginBottom: DesignSystem.spacing.lg,
   },
   headerTitle: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
+    color: DesignSystem.colors.textPrimary,
+    ...DesignSystem.typography.headlineMedium,
   },
   editButton: {
-    color: '#1E90FF',
-    fontSize: 16,
+    color: DesignSystem.colors.primary,
+    ...DesignSystem.typography.titleMedium,
   },
   profileHeader: {
     alignItems: 'center',
@@ -183,25 +186,24 @@ const styles = StyleSheet.create({
     height: 120,
     borderRadius: 60,
     borderWidth: 3,
-    borderColor: '#1E90FF',
+    borderColor: DesignSystem.colors.primary,
     marginBottom: 15,
   },
   nameText: {
-    color: 'white',
-    fontSize: 28,
-    fontWeight: 'bold',
+    color: DesignSystem.colors.textPrimary,
+    ...DesignSystem.typography.displaySmall,
   },
   usernameText: {
-    color: '#CCC',
-    fontSize: 16,
-    marginBottom: 10,
+    color: DesignSystem.colors.textSecondary,
+    ...DesignSystem.typography.titleMedium,
+    marginBottom: DesignSystem.spacing.sm,
   },
   bioText: {
-    color: 'white',
-    fontSize: 14,
+    color: DesignSystem.colors.textPrimary,
+    ...DesignSystem.typography.bodyMedium,
     textAlign: 'center',
     marginHorizontal: 30,
-    marginBottom: 20,
+    marginBottom: DesignSystem.spacing.lg,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -212,39 +214,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   statCount: {
-    color: 'white',
-    fontSize: 20,
-    fontWeight: 'bold',
+    color: DesignSystem.colors.textPrimary,
+    ...DesignSystem.typography.headlineLarge,
   },
   statLabel: {
-    color: '#CCC',
-    fontSize: 14,
+    color: DesignSystem.colors.textSecondary,
+    ...DesignSystem.typography.labelMedium,
   },
   activitySection: {
-    backgroundColor: 'rgba(30,30,30,0.8)',
-    borderRadius: 10,
-    padding: 15,
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
+    borderRadius: DesignSystem.radius.lg,
+    padding: DesignSystem.spacing.md,
   },
   sectionTitle: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 15,
+    color: DesignSystem.colors.textPrimary,
+    ...DesignSystem.typography.titleLarge,
+    marginBottom: DesignSystem.spacing.md,
   },
   activityItem: {
-    backgroundColor: 'rgba(50,50,50,0.5)',
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 10,
+    backgroundColor: DesignSystem.colors.surfaceContainer,
+    borderRadius: DesignSystem.radius.md,
+    padding: DesignSystem.spacing.md,
+    marginBottom: DesignSystem.spacing.sm,
   },
   activityDescription: {
-    color: 'white',
-    fontSize: 14,
-    marginBottom: 5,
+    color: DesignSystem.colors.textPrimary,
+    ...DesignSystem.typography.bodyLarge,
+    marginBottom: DesignSystem.spacing.xs,
   },
   activityTime: {
-    color: '#888',
-    fontSize: 12,
+    color: DesignSystem.colors.textMuted,
+    ...DesignSystem.typography.bodySmall,
     alignSelf: 'flex-end',
   },
 });
