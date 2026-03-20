@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, ActivityIndicator, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, StatusBar, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { useGetUserProfileByIdV1UsersProfileUserIdGetQuery } from '../store/api';
+import { useGetUserProfileByIdV1UsersProfileUserIdGetQuery, useCreateConversationV1ChatConversationsPostMutation } from '../store/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import { DesignSystem } from '../theme/design_system';
 import { ModernButton } from '../components/common/ModernButton';
@@ -12,7 +12,26 @@ const UserProfileScreen = () => {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: userProfileWrapper, error: userProfileError, isLoading: isUserProfileLoading } = useGetUserProfileByIdV1UsersProfileUserIdGetQuery({ userId: id as string });
+  const [createConversation, { isLoading: isStartingChat }] = useCreateConversationV1ChatConversationsPostMutation();
   const [activeTab, setActiveTab] = useState('About'); // 'About', 'Interests'
+
+  const handleMessage = async () => {
+    try {
+      const resultWrapper = await createConversation({
+        conversationCreate: {
+          user_ids: [id as string],
+          initial_message: "Hi! I saw your profile on MusicBud."
+        }
+      }).unwrap();
+      const conversation = resultWrapper?.data || resultWrapper;
+      router.push({
+        pathname: '/ChatDetailsScreen',
+        params: { id: conversation.id, name: user.display_name || user.username }
+      } as any);
+    } catch {
+      Alert.alert("Error", "Failed to start conversation.");
+    }
+  };
 
   if (isUserProfileLoading) {
     return (
@@ -77,7 +96,7 @@ const UserProfileScreen = () => {
 
             <View style={styles.actionButtonsRow}>
               <ModernButton text="Connect" onPressed={() => console.log('Connect')} />
-              <ModernButton text="Message" variant="outline" onPressed={() => console.log('Message')} />
+              <ModernButton text="Message" variant="outline" onPressed={handleMessage} isLoading={isStartingChat} />
             </View>
           </View>
         </View>
@@ -154,7 +173,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 20,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: DesignSystem.colors.overlay,
   },
   headerTitle: {
     color: DesignSystem.colors.onSurface,

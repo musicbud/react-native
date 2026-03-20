@@ -1,6 +1,6 @@
 import React from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, Dimensions, ScrollView, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, ScrollView, TouchableOpacity, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { DesignSystem } from '../theme/design_system';
@@ -15,7 +15,7 @@ const { width, height } = Dimensions.get('window');
 const HomeAltScreen = () => {
   const router = useRouter();
 
-  const { data: discoverContentWrapper, error: discoverContentError, isLoading: isDiscoverContentLoading } = usePublicDiscoverRootV1DiscoverPublicGetQuery();
+  const { isLoading: isDiscoverContentLoading } = usePublicDiscoverRootV1DiscoverPublicGetQuery();
   const { data: publicRecommendationsWrapper, error: publicRecommendationsError, isLoading: isPublicRecommendationsLoading } = usePublicRecommendationsRootV1RecommendationsPublicGetQuery({ genre: undefined, limit: undefined });
   const { data: trendingContentWrapper, error: trendingContentError, isLoading: isTrendingContentLoading } = usePublicTrendingV1DiscoverPublicTrendingGetQuery({ contentType: 'all' });
 

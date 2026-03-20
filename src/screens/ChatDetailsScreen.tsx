@@ -3,13 +3,13 @@ import { SafeImage } from '../components/common/SafeImage';
 import {
     View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity,
     KeyboardAvoidingView, Platform, SafeAreaView, ActivityIndicator,
-    Image, StatusBar, Pressable,
+    StatusBar, Pressable, Modal, Alert
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { DesignSystem } from '../theme/design_system';
-import { useGetCurrentUserInfoV1AuthMeGetQuery } from '../store/api';
+import { useGetCurrentUserInfoV1AuthMeGetQuery, useUpdateConversationSettingsV1ChatConversationsConversationIdSettingsPatchMutation, useDeleteConversationV1ChatConversationsConversationIdDeleteMutation } from '../store/api';
 import { useChatSync } from '../hooks/useChatSync';
 
 const ChatDetailsScreen = () => {
@@ -19,7 +19,12 @@ const ChatDetailsScreen = () => {
 
     const { messages, isMessagesLoading: isLoading, sendMessage, isSending } = useChatSync(id as string);
     const { data: myProfileWrapper } = useGetCurrentUserInfoV1AuthMeGetQuery();
+    const [updateSettings] = useUpdateConversationSettingsV1ChatConversationsConversationIdSettingsPatchMutation();
+    const [deleteConversation] = useDeleteConversationV1ChatConversationsConversationIdDeleteMutation();
+
     const [newMessage, setNewMessage] = useState('');
+    const [settingsVisible, setSettingsVisible] = useState(false);
+    const [chatNameInput, setChatNameInput] = useState(name || 'Chat');
 
     const myProfile = (myProfileWrapper as any)?.data || myProfileWrapper;
 
@@ -33,6 +38,34 @@ const ChatDetailsScreen = () => {
         } catch (err) {
             console.error('Send failed:', err);
         }
+    };
+
+    const handleUpdateSettings = async () => {
+        try {
+            await updateSettings({
+                conversationId: id as string,
+                updateSettingsRequest: { name: chatNameInput }
+            }).unwrap();
+            setSettingsVisible(false);
+            Alert.alert("Success", "Chat settings updated.");
+        } catch {
+            Alert.alert("Error", "Failed to update settings.");
+        }
+    };
+
+    const handleDeleteChat = () => {
+        Alert.alert("Delete Chat", "Are you sure you want to delete this conversation?", [
+            { text: "Cancel", style: "cancel" },
+            { text: "Delete", style: "destructive", onPress: async () => {
+                try {
+                    await deleteConversation({ conversationId: id as string }).unwrap();
+                    setSettingsVisible(false);
+                    router.back();
+                } catch {
+                    Alert.alert("Error", "Failed to delete chat.");
+                }
+            }}
+        ]);
     };
 
     useEffect(() => {
@@ -69,7 +102,7 @@ const ChatDetailsScreen = () => {
         );
     };
 
-    const chatName = name || 'Chat';
+    const chatName = chatNameInput || name || 'Chat';
     const chatAvatar = avatar
         || `https://ui-avatars.com/api/?name=${encodeURIComponent(chatName)}&background=E91E63&color=fff`;
 
@@ -90,7 +123,7 @@ const ChatDetailsScreen = () => {
                 <TouchableOpacity style={styles.headerAction}>
                     <Ionicons name="call" size={20} color={DesignSystem.colors.primaryRed} />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.headerAction}>
+                <TouchableOpacity style={styles.headerAction} onPress={() => setSettingsVisible(true)}>
                     <Ionicons name="ellipsis-vertical" size={20} color={DesignSystem.colors.textMuted} />
                 </TouchableOpacity>
             </View>
@@ -150,6 +183,40 @@ const ChatDetailsScreen = () => {
                     </Pressable>
                 </View>
             </KeyboardAvoidingView>
+
+            {/* Settings Modal */}
+            <Modal visible={settingsVisible} animationType="fade" transparent={true}>
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Chat Settings</Text>
+                        
+                        <Text style={styles.modalLabel}>Group Name</Text>
+                        <TextInput
+                            style={styles.modalInput}
+                            value={chatNameInput}
+                            onChangeText={setChatNameInput}
+                            placeholder="Enter chat name..."
+                            placeholderTextColor={DesignSystem.colors.textMuted}
+                        />
+
+                        <TouchableOpacity style={styles.saveBtn} onPress={handleUpdateSettings}>
+                            <Text style={styles.saveBtnText}>Save Settings</Text>
+                        </TouchableOpacity>
+
+                        <View style={styles.dangerZone}>
+                            <Text style={styles.dangerTitle}>Danger Zone</Text>
+                            <TouchableOpacity style={styles.deleteBtn} onPress={handleDeleteChat}>
+                                <Ionicons name="trash-outline" size={18} color="white" />
+                                <Text style={styles.deleteBtnText}>Delete Conversation</Text>
+                            </TouchableOpacity>
+                        </View>
+
+                        <TouchableOpacity style={styles.closeBtn} onPress={() => setSettingsVisible(false)}>
+                            <Text style={styles.closeBtnText}>Close</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 };
@@ -183,6 +250,21 @@ const styles = StyleSheet.create({
     input: { flex: 1, backgroundColor: DesignSystem.colors.surfaceContainerHighest, borderRadius: DesignSystem.radius.full, paddingHorizontal: DesignSystem.spacing.md, paddingVertical: 10, color: DesignSystem.colors.onSurface, ...DesignSystem.typography.bodyMedium, maxHeight: 120, marginHorizontal: 8 },
     sendBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: DesignSystem.colors.primaryRed, justifyContent: 'center', alignItems: 'center' },
     sendBtnDisabled: { backgroundColor: DesignSystem.colors.surfaceContainerHighest },
+
+    // Modal Styles
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', padding: 20 },
+    modalContent: { backgroundColor: DesignSystem.colors.surfaceContainer, borderRadius: 16, padding: 24, paddingBottom: 16 },
+    modalTitle: { color: DesignSystem.colors.textPrimary, fontSize: 20, fontWeight: 'bold', marginBottom: 20 },
+    modalLabel: { color: DesignSystem.colors.textSecondary, marginBottom: 8 },
+    modalInput: { backgroundColor: DesignSystem.colors.surfaceContainerHigh, color: DesignSystem.colors.textPrimary, padding: 12, borderRadius: 8, marginBottom: 16 },
+    saveBtn: { backgroundColor: DesignSystem.colors.primary, paddingVertical: 12, borderRadius: 8, alignItems: 'center', marginBottom: 24 },
+    saveBtnText: { color: DesignSystem.colors.onPrimary, fontWeight: 'bold' },
+    dangerZone: { borderTopWidth: 1, borderTopColor: DesignSystem.colors.borderColor, paddingTop: 16, marginBottom: 16 },
+    dangerTitle: { color: DesignSystem.colors.errorRed, fontWeight: 'bold', marginBottom: 12 },
+    deleteBtn: { flexDirection: 'row', backgroundColor: DesignSystem.colors.errorRed, paddingVertical: 12, borderRadius: 8, alignItems: 'center', justifyContent: 'center', gap: 8 },
+    deleteBtnText: { color: 'white', fontWeight: 'bold' },
+    closeBtn: { paddingVertical: 12, alignItems: 'center', marginTop: 8 },
+    closeBtnText: { color: DesignSystem.colors.textSecondary, fontWeight: 'bold' }
 });
 
 export default ChatDetailsScreen;

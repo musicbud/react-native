@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, Linking, Alert } from 'react-native
 import { DesignSystem } from '../theme/design_system';
 import { ModernButton } from '../components/common/ModernButton';
 import { SectionHeader } from '../components/common/SectionHeader';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { IconSymbol } from '../../components/ui/icon-symbol';
 import { getBaseUrl } from '../store/apibase';
 
 interface ServiceConnectCardProps {

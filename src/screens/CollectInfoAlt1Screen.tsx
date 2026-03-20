@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
+import { DesignSystem } from '../theme/design_system';
 
 const { width, height } = Dimensions.get('window');
 
@@ -23,7 +24,7 @@ const CollectInfoAlt1Screen = () => {
   return (
     <View style={styles.container}>
       <SafeImage
-        source={{/* require('../../assets/ui/extra/Collect information-1.png') */}}
+        source={{/* require('../../assets/ui/extra/Collect information-1.png') */ }}
         style={styles.backgroundImage}
         resizeMode="cover"
       />
@@ -43,7 +44,7 @@ const CollectInfoAlt1Screen = () => {
           <TextInput
             style={styles.dateInput}
             placeholder="DD"
-            placeholderTextColor="#888"
+            placeholderTextColor={DesignSystem.colors.textMuted}
             value={day}
             onChangeText={setDay}
             keyboardType="numeric"
@@ -52,7 +53,7 @@ const CollectInfoAlt1Screen = () => {
           <TextInput
             style={styles.dateInput}
             placeholder="MM"
-            placeholderTextColor="#888"
+            placeholderTextColor={DesignSystem.colors.textMuted}
             value={month}
             onChangeText={setMonth}
             keyboardType="numeric"
@@ -61,7 +62,7 @@ const CollectInfoAlt1Screen = () => {
           <TextInput
             style={styles.dateInput}
             placeholder="YYYY"
-            placeholderTextColor="#888"
+            placeholderTextColor={DesignSystem.colors.textMuted}
             value={year}
             onChangeText={setYear}
             keyboardType="numeric"
@@ -85,7 +86,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
   },
   backgroundImage: {
     width: width,
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   overlay: {
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: DesignSystem.colors.overlay,
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
@@ -114,14 +115,14 @@ const styles = StyleSheet.create({
   progressBarContainer: {
     width: '90%',
     height: 6,
-    backgroundColor: '#333',
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
     borderRadius: 3,
     marginTop: 100,
     marginBottom: 50,
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#1E90FF',
+    backgroundColor: DesignSystem.colors.primary,
     borderRadius: 3,
   },
   title: {
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
   dateInput: {
     width: '30%',
     height: 50,
-    backgroundColor: '#333',
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
     borderRadius: 10,
     paddingHorizontal: 15,
     color: 'white',
@@ -151,7 +152,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1E90FF',
+    backgroundColor: DesignSystem.colors.primary,
     width: '90%',
     paddingVertical: 15,
     borderRadius: 10,
@@ -169,7 +170,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   hintText: {
-    color: '#888',
+    color: DesignSystem.colors.textMuted,
     fontSize: 14,
     marginTop: 20,
     textAlign: 'center',

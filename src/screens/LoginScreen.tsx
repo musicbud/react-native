@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, TextInput, Alert, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, TextInput, Alert, StatusBar } from 'react-native';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useDispatch } from 'react-redux';
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     ...DesignSystem.typography.bodyMedium,
-    color: '#B5B5B5',
+    color: DesignSystem.colors.textSecondary,
     marginBottom: DesignSystem.spacing.xl,
   },
   inputGroup: {
@@ -175,7 +175,7 @@ const styles = StyleSheet.create({
     color: DesignSystem.colors.onSurface,
     ...DesignSystem.typography.bodyLarge,
     borderWidth: 1,
-    borderColor: '#C1C1C1',
+    borderColor: DesignSystem.colors.border,
   },
   passwordInputContainer: {
     flexDirection: 'row',
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     borderRadius: DesignSystem.radius.sm,
     paddingHorizontal: DesignSystem.spacing.md,
     borderWidth: 1,
-    borderColor: '#C1C1C1',
+    borderColor: DesignSystem.colors.border,
   },
   passwordInput: {
     flex: 1,
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   linkText: {
-    color: '#999999',
+    color: DesignSystem.colors.textMuted,
     ...DesignSystem.typography.labelLarge,
     fontSize: 12,
   },
@@ -227,10 +227,10 @@ const styles = StyleSheet.create({
   orLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#121212',
+    backgroundColor: DesignSystem.colors.border,
   },
   orText: {
-    color: '#ACACAC',
+    color: DesignSystem.colors.textMuted,
     paddingHorizontal: 10,
     fontSize: 14,
     fontFamily: 'Josefin Sans',

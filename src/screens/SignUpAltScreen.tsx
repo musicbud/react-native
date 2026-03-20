@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useRegisterV1AuthRegisterPostMutation } from '../store/api';
+import { DesignSystem } from '../theme/design_system';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 
 const { width, height } = Dimensions.get('window');
@@ -36,7 +38,7 @@ const SignUpAltScreen = () => {
   return (
     <View style={styles.container}>
       <SafeImage
-        source={{/* require('../../assets/ui/extra/Sign up-1.png') */}}
+        source={{/* require('../../assets/ui/extra/Sign up-1.png') */ }}
         style={styles.backgroundImage}
         resizeMode="cover"
       />
@@ -49,7 +51,7 @@ const SignUpAltScreen = () => {
           <TextInput
             style={styles.input}
             placeholder="Enter your Email or Username"
-            placeholderTextColor="#888"
+            placeholderTextColor={DesignSystem.colors.textMuted}
             value={emailOrUsername}
             onChangeText={setEmailOrUsername}
             keyboardType="email-address"
@@ -63,14 +65,14 @@ const SignUpAltScreen = () => {
             <TextInput
               style={styles.passwordInput}
               placeholder="Enter your password"
-              placeholderTextColor="#888"
+              placeholderTextColor={DesignSystem.colors.textMuted}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
               autoCapitalize="none"
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
-              <Text style={{ color: '#888' }}>{showPassword ? 'Hide' : 'Show'}</Text>
+              <Text style={{ color: DesignSystem.colors.textSecondary }}>{showPassword ? 'Hide' : 'Show'}</Text>
             </TouchableOpacity>
           </View>
           <View style={styles.passwordHintRow}>
@@ -125,7 +127,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: DesignSystem.colors.background,
   },
   backgroundImage: {
     width: width,
@@ -134,7 +136,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   overlay: {
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: DesignSystem.colors.overlay,
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
@@ -166,7 +168,7 @@ const styles = StyleSheet.create({
   input: {
     width: '100%',
     height: 50,
-    backgroundColor: '#333',
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
     borderRadius: 10,
     paddingHorizontal: 15,
     color: 'white',
@@ -177,7 +179,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     height: 50,
-    backgroundColor: '#333',
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
     borderRadius: 10,
     paddingHorizontal: 15,
   },
@@ -196,7 +198,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   passwordHintText: {
-    color: '#888',
+    color: DesignSystem.colors.textSecondary,
     fontSize: 12,
   },
   passwordStrengthText: {
@@ -207,7 +209,7 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   requirementText: {
-    color: '#888',
+    color: DesignSystem.colors.textSecondary,
     fontSize: 12,
     marginBottom: 2,
   },
@@ -228,8 +230,8 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   checkboxChecked: {
-    backgroundColor: '#1E90FF',
-    borderColor: '#1E90FF',
+    backgroundColor: DesignSystem.colors.primary,
+    borderColor: DesignSystem.colors.primary,
   },
   checkboxCheck: {
     color: 'white',
@@ -240,7 +242,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   signupButton: {
-    backgroundColor: '#1E90FF',
+    backgroundColor: DesignSystem.colors.primaryDark,
     width: '100%',
     paddingVertical: 15,
     borderRadius: 10,
@@ -275,7 +277,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   loginLinkText: {
-    color: '#1E90FF',
+    color: DesignSystem.colors.primary,
     fontSize: 14,
     marginTop: 20,
   },

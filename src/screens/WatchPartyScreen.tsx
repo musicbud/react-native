@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, TextInput, FlatList, ActivityIndicator, StatusBar, KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, TextInput, FlatList, ActivityIndicator, StatusBar, KeyboardAvoidingView, Platform, SafeAreaView } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import {
   useGetConversationDetailsV1ChatConversationsConversationIdGetQuery,
@@ -9,7 +9,6 @@ import {
   useGetCurrentUserInfoV1AuthMeGetQuery
 } from '../store/api';
 import { Ionicons } from '@expo/vector-icons';
-import { mapJsonToStyles } from '../utils/styleMapper';
 import { DesignSystem } from '../theme/design_system';
 
 const { width, height } = Dimensions.get('window');
@@ -49,12 +48,9 @@ const WatchPartyScreen = () => {
       }
     }
   };
-  const isMyMessage = (senderId: string) => myProfile?.id === senderId;
+  const isMyMessage = (senderId: string) => (myProfile as any)?.id === senderId;
 
-  // Use styleMapper to grab sizing/opacity tokens
-  const overlayStyle = mapJsonToStyles({
-    properties: { layout: { padding: { top: Platform.OS === 'ios' ? 50 : 20, left: 20, right: 20, bottom: 20 } } }
-  });
+  const overlayStyle = { paddingTop: Platform.OS === 'ios' ? 50 : 20, paddingLeft: 20, paddingRight: 20, paddingBottom: 20 };
 
   const renderChatMessage = ({ item }: { item: any }) => {
     const isMe = isMyMessage(item.sender_id);
@@ -77,8 +73,9 @@ const WatchPartyScreen = () => {
 
   if (isChannelLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#1E90FF" />
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color={DesignSystem.colors.primary} />
+        <Text style={styles.loadingText}>Starting watch party…</Text>
       </View>
     );
   }
@@ -97,7 +94,7 @@ const WatchPartyScreen = () => {
       />
       <View style={styles.dimOverlay} />
 
-      <SafeAreaView style={[styles.overlay, overlayStyle as any]}>
+      <SafeAreaView style={[styles.overlay, overlayStyle]}>
         {/* Header HUD */}
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()} style={styles.iconCircle}>
@@ -189,11 +186,12 @@ const WatchPartyScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#000' },
+  container: { flex: 1, backgroundColor: DesignSystem.colors.backgroundPrimary },
   fullBackgroundImage: { width, height, position: 'absolute' },
   dimOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: DesignSystem.colors.overlay },
   overlay: { flex: 1 },
-  loadingContainer: { flex: 1, backgroundColor: DesignSystem.colors.backgroundPrimary, justifyContent: 'center', alignItems: 'center' },
+  centerContainer: { flex: 1, backgroundColor: DesignSystem.colors.backgroundPrimary, justifyContent: 'center', alignItems: 'center', gap: 16 },
+  loadingText: { color: DesignSystem.colors.textPrimary, fontSize: 16 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   headerRight: { flexDirection: 'row', gap: 12 },
   iconCircle: { width: 44, height: 44, borderRadius: 22, backgroundColor: DesignSystem.colors.surfaceContainerHighest, justifyContent: 'center', alignItems: 'center' },

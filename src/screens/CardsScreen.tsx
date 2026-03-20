@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
 import {
-  View, Text, StyleSheet, Image, Dimensions,
+  View, Text, StyleSheet, Dimensions,
   TouchableOpacity, Animated, PanResponder, ActivityIndicator, Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,7 +22,7 @@ const CardsScreen = () => {
 
   const cards = (discoveryCardsWrapper as any)?.data || discoveryCardsWrapper || [];
 
-  const handleSwipe = async (action: 'like' | 'pass') => {
+  const handleSwipe = async (action: 'like' | 'pass' | 'super_like') => {
     if (currentIndex >= cards.length) return;
     const currentCard = cards[currentIndex];
 
@@ -155,7 +155,7 @@ const CardsScreen = () => {
 
         <TouchableOpacity
           style={[styles.actionBtn, styles.superBtn]}
-          onPress={() => handleSwipe('like')}
+          onPress={() => handleSwipe('super_like')}
           disabled={isSwipingUser || currentIndex >= cards.length}
         >
           <Ionicons name="star" size={24} color="#FFD700" />

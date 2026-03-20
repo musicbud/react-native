@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, Dimensions, ScrollView, TouchableOpacity, FlatList, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, ScrollView, TouchableOpacity, FlatList, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { DesignSystem } from '../theme/design_system';
 import {
@@ -84,7 +84,7 @@ const DiscoverAltScreen = () => {
           <TextInput
             style={styles.searchBarInput}
             placeholder="Search..."
-            placeholderTextColor="#888"
+            placeholderTextColor={DesignSystem.colors.textMuted}
             value={searchText}
             onChangeText={setSearchText}
             onSubmitEditing={() => router.push(`/Search?q=${searchText}` as any)}
@@ -135,7 +135,7 @@ const DiscoverAltScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: DesignSystem.colors.background,
   },
   fullBackgroundImage: {
     width: width,

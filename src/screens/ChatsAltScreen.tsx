@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, Dimensions, ScrollView, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, ScrollView, TouchableOpacity, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useGetConversationsV1ChatConversationsGetQuery, useGetConnectionsV1MatchingConnectionsGetQuery } from '../store/api';
 import { DesignSystem } from '../theme/design_system';

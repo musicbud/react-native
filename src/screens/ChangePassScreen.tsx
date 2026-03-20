@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useResetPasswordV1AuthResetPasswordPostMutation } from '../store/api';
 

@@ -136,7 +136,7 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/v1/users/profile`,
         method: "PUT",
-        body: queryArg.userProfileUpdate,
+        body: queryArg.profileData,
       }),
     }),
     updateUserProfileV1UsersProfilePost: build.mutation<
@@ -146,7 +146,7 @@ const injectedRtkApi = api.injectEndpoints({
       query: (queryArg) => ({
         url: `/v1/users/profile`,
         method: "POST",
-        body: queryArg.userProfileUpdate,
+        body: queryArg.profileData,
       }),
     }),
     getUserProfileByIdV1UsersProfileUserIdGet: build.query<
@@ -240,6 +240,30 @@ const injectedRtkApi = api.injectEndpoints({
       GetUserStatsV1UsersStatsGetApiArg
     >({
       query: () => ({ url: `/v1/users/stats` }),
+    }),
+    getUserInterestsV1UsersInterestsGet: build.query<
+      GetUserInterestsV1UsersInterestsGetApiResponse,
+      GetUserInterestsV1UsersInterestsGetApiArg
+    >({
+      query: () => ({ url: `/v1/users/interests` }),
+    }),
+    addUserInterestV1UsersInterestsCategoryInterestPost: build.mutation<
+      AddUserInterestV1UsersInterestsCategoryInterestPostApiResponse,
+      AddUserInterestV1UsersInterestsCategoryInterestPostApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/v1/users/interests/${queryArg.category}/${queryArg.interest}`,
+        method: "POST",
+      }),
+    }),
+    removeUserInterestV1UsersInterestsCategoryInterestDelete: build.mutation<
+      RemoveUserInterestV1UsersInterestsCategoryInterestDeleteApiResponse,
+      RemoveUserInterestV1UsersInterestsCategoryInterestDeleteApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/v1/users/interests/${queryArg.category}/${queryArg.interest}`,
+        method: "DELETE",
+      }),
     }),
     getRecentActivityV1UsersActivityRecentGet: build.query<
       GetRecentActivityV1UsersActivityRecentGetApiResponse,
@@ -344,6 +368,38 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: () => ({ url: `/v1/matching/stats` }),
     }),
+    addConversationMembersV1ChatConversationsConversationIdMembersPost:
+      build.mutation<
+        AddConversationMembersV1ChatConversationsConversationIdMembersPostApiResponse,
+        AddConversationMembersV1ChatConversationsConversationIdMembersPostApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/v1/chat/conversations/${queryArg.conversationId}/members`,
+          method: "POST",
+          body: queryArg.addMembersRequest,
+        }),
+      }),
+    removeConversationMemberV1ChatConversationsConversationIdMembersUserIdDelete:
+      build.mutation<
+        RemoveConversationMemberV1ChatConversationsConversationIdMembersUserIdDeleteApiResponse,
+        RemoveConversationMemberV1ChatConversationsConversationIdMembersUserIdDeleteApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/v1/chat/conversations/${queryArg.conversationId}/members/${queryArg.userId}`,
+          method: "DELETE",
+        }),
+      }),
+    updateConversationSettingsV1ChatConversationsConversationIdSettingsPatch:
+      build.mutation<
+        UpdateConversationSettingsV1ChatConversationsConversationIdSettingsPatchApiResponse,
+        UpdateConversationSettingsV1ChatConversationsConversationIdSettingsPatchApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/v1/chat/conversations/${queryArg.conversationId}/settings`,
+          method: "PATCH",
+          body: queryArg.updateSettingsRequest,
+        }),
+      }),
     getConversationsV1ChatConversationsGet: build.query<
       GetConversationsV1ChatConversationsGetApiResponse,
       GetConversationsV1ChatConversationsGetApiArg
@@ -392,7 +448,7 @@ const injectedRtkApi = api.injectEndpoints({
           url: `/v1/chat/conversations/${queryArg.conversationId}/status`,
           method: "PUT",
           params: {
-            status: queryArg.status,
+            conversation_status: queryArg.conversationStatus,
           },
         }),
       }),
@@ -663,23 +719,51 @@ const injectedRtkApi = api.injectEndpoints({
     >({
       query: () => ({ url: `/v1/library/tracks` }),
     }),
+    getLibraryArtistsV1LibraryArtistsGet: build.query<
+      GetLibraryArtistsV1LibraryArtistsGetApiResponse,
+      GetLibraryArtistsV1LibraryArtistsGetApiArg
+    >({
+      query: () => ({ url: `/v1/library/artists` }),
+    }),
+    getLibraryAlbumsV1LibraryAlbumsGet: build.query<
+      GetLibraryAlbumsV1LibraryAlbumsGetApiResponse,
+      GetLibraryAlbumsV1LibraryAlbumsGetApiArg
+    >({
+      query: () => ({ url: `/v1/library/albums` }),
+    }),
+    getLibraryGenresV1LibraryGenresGet: build.query<
+      GetLibraryGenresV1LibraryGenresGetApiResponse,
+      GetLibraryGenresV1LibraryGenresGetApiArg
+    >({
+      query: () => ({ url: `/v1/library/genres` }),
+    }),
     getLibraryAnimeV1LibraryAnimeGet: build.query<
       GetLibraryAnimeV1LibraryAnimeGetApiResponse,
       GetLibraryAnimeV1LibraryAnimeGetApiArg
     >({
       query: () => ({ url: `/v1/library/anime` }),
     }),
-    getOrPostLibraryRecentV1LibraryRecentGet: build.query<
-      GetOrPostLibraryRecentV1LibraryRecentGetApiResponse,
-      GetOrPostLibraryRecentV1LibraryRecentGetApiArg
+    getLibraryMangaV1LibraryMangaGet: build.query<
+      GetLibraryMangaV1LibraryMangaGetApiResponse,
+      GetLibraryMangaV1LibraryMangaGetApiArg
+    >({
+      query: () => ({ url: `/v1/library/manga` }),
+    }),
+    getLibraryRecentV1LibraryRecentGet: build.query<
+      GetLibraryRecentV1LibraryRecentGetApiResponse,
+      GetLibraryRecentV1LibraryRecentGetApiArg
     >({
       query: () => ({ url: `/v1/library/recent` }),
     }),
-    getOrPostLibraryRecentV1LibraryRecentPost: build.mutation<
-      GetOrPostLibraryRecentV1LibraryRecentPostApiResponse,
-      GetOrPostLibraryRecentV1LibraryRecentPostApiArg
+    postLibraryRecentV1LibraryRecentPost: build.mutation<
+      PostLibraryRecentV1LibraryRecentPostApiResponse,
+      PostLibraryRecentV1LibraryRecentPostApiArg
     >({
-      query: () => ({ url: `/v1/library/recent`, method: "POST" }),
+      query: (queryArg) => ({
+        url: `/v1/library/recent`,
+        method: "POST",
+        body: queryArg.data,
+      }),
     }),
     addTrackToLibraryV1LibraryTracksTrackIdPost: build.mutation<
       AddTrackToLibraryV1LibraryTracksTrackIdPostApiResponse,
@@ -760,86 +844,158 @@ const injectedRtkApi = api.injectEndpoints({
         body: queryArg.addTrackRequest,
       }),
     }),
-    commonLikedTracksV1BudBudCommonLikedTracksPost: build.mutation<
-      CommonLikedTracksV1BudBudCommonLikedTracksPostApiResponse,
-      CommonLikedTracksV1BudBudCommonLikedTracksPostApiArg
+    getBudProfileV1BudBudProfilePost: build.mutation<
+      GetBudProfileV1BudBudProfilePostApiResponse,
+      GetBudProfileV1BudBudProfilePostApiArg
     >({
       query: (queryArg) => ({
-        url: `/v1/bud/bud/common/liked/tracks`,
+        url: `/v1/bud/bud/profile`,
         method: "POST",
         body: queryArg.budRequest,
       }),
     }),
-    commonLikedArtistsV1BudBudCommonLikedArtistsPost: build.mutation<
-      CommonLikedArtistsV1BudBudCommonLikedArtistsPostApiResponse,
-      CommonLikedArtistsV1BudBudCommonLikedArtistsPostApiArg
+    commonLikedTracksV1BudBudLikedTracksPost: build.mutation<
+      CommonLikedTracksV1BudBudLikedTracksPostApiResponse,
+      CommonLikedTracksV1BudBudLikedTracksPostApiArg
     >({
       query: (queryArg) => ({
-        url: `/v1/bud/bud/common/liked/artists`,
+        url: `/v1/bud/bud/liked/tracks`,
         method: "POST",
         body: queryArg.budRequest,
       }),
     }),
-    commonLikedAlbumsV1BudBudCommonLikedAlbumsPost: build.mutation<
-      CommonLikedAlbumsV1BudBudCommonLikedAlbumsPostApiResponse,
-      CommonLikedAlbumsV1BudBudCommonLikedAlbumsPostApiArg
+    commonLikedArtistsV1BudBudLikedArtistsPost: build.mutation<
+      CommonLikedArtistsV1BudBudLikedArtistsPostApiResponse,
+      CommonLikedArtistsV1BudBudLikedArtistsPostApiArg
     >({
       query: (queryArg) => ({
-        url: `/v1/bud/bud/common/liked/albums`,
+        url: `/v1/bud/bud/liked/artists`,
         method: "POST",
         body: queryArg.budRequest,
       }),
     }),
-    commonPlayedTracksV1BudBudCommonPlayedTracksPost: build.mutation<
-      CommonPlayedTracksV1BudBudCommonPlayedTracksPostApiResponse,
-      CommonPlayedTracksV1BudBudCommonPlayedTracksPostApiArg
+    commonLikedAlbumsV1BudBudLikedAlbumsPost: build.mutation<
+      CommonLikedAlbumsV1BudBudLikedAlbumsPostApiResponse,
+      CommonLikedAlbumsV1BudBudLikedAlbumsPostApiArg
     >({
       query: (queryArg) => ({
-        url: `/v1/bud/bud/common/played/tracks`,
+        url: `/v1/bud/bud/liked/albums`,
         method: "POST",
         body: queryArg.budRequest,
       }),
     }),
-    commonTopArtistsV1BudBudCommonTopArtistsPost: build.mutation<
-      CommonTopArtistsV1BudBudCommonTopArtistsPostApiResponse,
-      CommonTopArtistsV1BudBudCommonTopArtistsPostApiArg
+    commonLikedGenresV1BudBudLikedGenresPost: build.mutation<
+      CommonLikedGenresV1BudBudLikedGenresPostApiResponse,
+      CommonLikedGenresV1BudBudLikedGenresPostApiArg
     >({
       query: (queryArg) => ({
-        url: `/v1/bud/bud/common/top/artists`,
+        url: `/v1/bud/bud/liked/genres`,
         method: "POST",
         body: queryArg.budRequest,
       }),
     }),
-    commonTopGenresV1BudBudCommonTopGenresPost: build.mutation<
-      CommonTopGenresV1BudBudCommonTopGenresPostApiResponse,
-      CommonTopGenresV1BudBudCommonTopGenresPostApiArg
+    commonLikedAioV1BudBudLikedAioPost: build.mutation<
+      CommonLikedAioV1BudBudLikedAioPostApiResponse,
+      CommonLikedAioV1BudBudLikedAioPostApiArg
     >({
       query: (queryArg) => ({
-        url: `/v1/bud/bud/common/top/genres`,
+        url: `/v1/bud/bud/liked/aio`,
         method: "POST",
         body: queryArg.budRequest,
       }),
     }),
-    commonTopAnimeV1BudBudCommonTopAnimePost: build.mutation<
-      CommonTopAnimeV1BudBudCommonTopAnimePostApiResponse,
-      CommonTopAnimeV1BudBudCommonTopAnimePostApiArg
+    commonTopArtistsV1BudBudTopArtistsPost: build.mutation<
+      CommonTopArtistsV1BudBudTopArtistsPostApiResponse,
+      CommonTopArtistsV1BudBudTopArtistsPostApiArg
     >({
       query: (queryArg) => ({
-        url: `/v1/bud/bud/common/top/anime`,
+        url: `/v1/bud/bud/top/artists`,
         method: "POST",
         body: queryArg.budRequest,
       }),
     }),
-    commonTopMangaV1BudBudCommonTopMangaPost: build.mutation<
-      CommonTopMangaV1BudBudCommonTopMangaPostApiResponse,
-      CommonTopMangaV1BudBudCommonTopMangaPostApiArg
+    commonTopTracksV1BudBudTopTracksPost: build.mutation<
+      CommonTopTracksV1BudBudTopTracksPostApiResponse,
+      CommonTopTracksV1BudBudTopTracksPostApiArg
     >({
       query: (queryArg) => ({
-        url: `/v1/bud/bud/common/top/manga`,
+        url: `/v1/bud/bud/top/tracks`,
         method: "POST",
         body: queryArg.budRequest,
       }),
     }),
+    commonTopAnimeV1BudBudTopAnimePost: build.mutation<
+      CommonTopAnimeV1BudBudTopAnimePostApiResponse,
+      CommonTopAnimeV1BudBudTopAnimePostApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/v1/bud/bud/top/anime`,
+        method: "POST",
+        body: queryArg.budRequest,
+      }),
+    }),
+    commonTopMangaV1BudBudTopMangaPost: build.mutation<
+      CommonTopMangaV1BudBudTopMangaPostApiResponse,
+      CommonTopMangaV1BudBudTopMangaPostApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/v1/bud/bud/top/manga`,
+        method: "POST",
+        body: queryArg.budRequest,
+      }),
+    }),
+    commonPlayedTracksV1BudBudPlayedTracksPost: build.mutation<
+      CommonPlayedTracksV1BudBudPlayedTracksPostApiResponse,
+      CommonPlayedTracksV1BudBudPlayedTracksPostApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/v1/bud/bud/played/tracks`,
+        method: "POST",
+        body: queryArg.budRequest,
+      }),
+    }),
+    getAdminStatsV1AdminStatsGet: build.query<
+      GetAdminStatsV1AdminStatsGetApiResponse,
+      GetAdminStatsV1AdminStatsGetApiArg
+    >({
+      query: () => ({ url: `/v1/admin/stats` }),
+    }),
+    getAllUsersV1AdminUsersGet: build.query<
+      GetAllUsersV1AdminUsersGetApiResponse,
+      GetAllUsersV1AdminUsersGetApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/v1/admin/users`,
+        params: {
+          limit: queryArg.limit,
+        },
+      }),
+    }),
+    getUserDetailsAdminV1AdminUsersUserIdGet: build.query<
+      GetUserDetailsAdminV1AdminUsersUserIdGetApiResponse,
+      GetUserDetailsAdminV1AdminUsersUserIdGetApiArg
+    >({
+      query: (queryArg) => ({ url: `/v1/admin/users/${queryArg.userId}` }),
+    }),
+    banUserV1AdminUsersUserIdBanPost: build.mutation<
+      BanUserV1AdminUsersUserIdBanPostApiResponse,
+      BanUserV1AdminUsersUserIdBanPostApiArg
+    >({
+      query: (queryArg) => ({
+        url: `/v1/admin/users/${queryArg.userId}/ban`,
+        method: "POST",
+      }),
+    }),
+    deleteConversationAdminV1AdminConversationsConversationIdDelete:
+      build.mutation<
+        DeleteConversationAdminV1AdminConversationsConversationIdDeleteApiResponse,
+        DeleteConversationAdminV1AdminConversationsConversationIdDeleteApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/v1/admin/conversations/${queryArg.conversationId}`,
+          method: "DELETE",
+        }),
+      }),
     rootGet: build.query<RootGetApiResponse, RootGetApiArg>({
       query: () => ({ url: `/` }),
     }),
@@ -920,12 +1076,12 @@ export type GetMyProfileV1UsersProfileGetApiArg = void;
 export type UpdateUserProfileV1UsersProfilePutApiResponse =
   /** status 200 Successful Response */ any;
 export type UpdateUserProfileV1UsersProfilePutApiArg = {
-  userProfileUpdate: UserProfileUpdate;
+  profileData: UserProfileUpdate | null;
 };
 export type UpdateUserProfileV1UsersProfilePostApiResponse =
   /** status 200 Successful Response */ any;
 export type UpdateUserProfileV1UsersProfilePostApiArg = {
-  userProfileUpdate: UserProfileUpdate;
+  profileData: UserProfileUpdate | null;
 };
 export type GetUserProfileByIdV1UsersProfileUserIdGetApiResponse =
   /** status 200 Successful Response */ any;
@@ -975,6 +1131,21 @@ export type UpdateAppSettingsV1UsersSettingsAppPutApiArg = {
 export type GetUserStatsV1UsersStatsGetApiResponse =
   /** status 200 Successful Response */ any;
 export type GetUserStatsV1UsersStatsGetApiArg = void;
+export type GetUserInterestsV1UsersInterestsGetApiResponse =
+  /** status 200 Successful Response */ any;
+export type GetUserInterestsV1UsersInterestsGetApiArg = void;
+export type AddUserInterestV1UsersInterestsCategoryInterestPostApiResponse =
+  /** status 200 Successful Response */ any;
+export type AddUserInterestV1UsersInterestsCategoryInterestPostApiArg = {
+  category: string;
+  interest: string;
+};
+export type RemoveUserInterestV1UsersInterestsCategoryInterestDeleteApiResponse =
+  /** status 200 Successful Response */ any;
+export type RemoveUserInterestV1UsersInterestsCategoryInterestDeleteApiArg = {
+  category: string;
+  interest: string;
+};
 export type GetRecentActivityV1UsersActivityRecentGetApiResponse =
   /** status 200 Successful Response */ any;
 export type GetRecentActivityV1UsersActivityRecentGetApiArg = {
@@ -1028,6 +1199,27 @@ export type GetCompatibilityWithUserV1MatchingCompatibilityUserIdGetApiArg = {
 export type GetMatchingStatsV1MatchingStatsGetApiResponse =
   /** status 200 Successful Response */ any;
 export type GetMatchingStatsV1MatchingStatsGetApiArg = void;
+export type AddConversationMembersV1ChatConversationsConversationIdMembersPostApiResponse =
+  /** status 200 Successful Response */ any;
+export type AddConversationMembersV1ChatConversationsConversationIdMembersPostApiArg =
+  {
+    conversationId: string;
+    addMembersRequest: AddMembersRequest;
+  };
+export type RemoveConversationMemberV1ChatConversationsConversationIdMembersUserIdDeleteApiResponse =
+  /** status 200 Successful Response */ any;
+export type RemoveConversationMemberV1ChatConversationsConversationIdMembersUserIdDeleteApiArg =
+  {
+    conversationId: string;
+    userId: string;
+  };
+export type UpdateConversationSettingsV1ChatConversationsConversationIdSettingsPatchApiResponse =
+  /** status 200 Successful Response */ any;
+export type UpdateConversationSettingsV1ChatConversationsConversationIdSettingsPatchApiArg =
+  {
+    conversationId: string;
+    updateSettingsRequest: UpdateSettingsRequest;
+  };
 export type GetConversationsV1ChatConversationsGetApiResponse =
   /** status 200 Successful Response */ any;
 export type GetConversationsV1ChatConversationsGetApiArg = {
@@ -1054,7 +1246,7 @@ export type UpdateConversationStatusV1ChatConversationsConversationIdStatusPutAp
 export type UpdateConversationStatusV1ChatConversationsConversationIdStatusPutApiArg =
   {
     conversationId: string;
-    status: "active" | "archived" | "muted" | "blocked";
+    conversationStatus: "active" | "archived" | "muted" | "blocked";
   };
 export type GetMessagesV1ChatConversationsConversationIdMessagesGetApiResponse =
   /** status 200 Successful Response */ any;
@@ -1185,7 +1377,7 @@ export type PublicDiscoverRootV1DiscoverPublicGetApiArg = void;
 export type PublicTrendingV1DiscoverPublicTrendingGetApiResponse =
   /** status 200 Successful Response */ any;
 export type PublicTrendingV1DiscoverPublicTrendingGetApiArg = {
-  contentType?: string | null;
+  contentType?: "all" | "tracks" | "artists" | "movies" | "manga" | "anime";
   limit?: number;
 };
 export type PublicGenresV1DiscoverPublicGenresGetApiResponse =
@@ -1199,15 +1391,29 @@ export type GetLibrarySummaryV1LibraryGetApiArg = void;
 export type GetLibraryTracksV1LibraryTracksGetApiResponse =
   /** status 200 Successful Response */ any;
 export type GetLibraryTracksV1LibraryTracksGetApiArg = void;
+export type GetLibraryArtistsV1LibraryArtistsGetApiResponse =
+  /** status 200 Successful Response */ any;
+export type GetLibraryArtistsV1LibraryArtistsGetApiArg = void;
+export type GetLibraryAlbumsV1LibraryAlbumsGetApiResponse =
+  /** status 200 Successful Response */ any;
+export type GetLibraryAlbumsV1LibraryAlbumsGetApiArg = void;
+export type GetLibraryGenresV1LibraryGenresGetApiResponse =
+  /** status 200 Successful Response */ any;
+export type GetLibraryGenresV1LibraryGenresGetApiArg = void;
 export type GetLibraryAnimeV1LibraryAnimeGetApiResponse =
   /** status 200 Successful Response */ any;
 export type GetLibraryAnimeV1LibraryAnimeGetApiArg = void;
-export type GetOrPostLibraryRecentV1LibraryRecentGetApiResponse =
+export type GetLibraryMangaV1LibraryMangaGetApiResponse =
   /** status 200 Successful Response */ any;
-export type GetOrPostLibraryRecentV1LibraryRecentGetApiArg = void;
-export type GetOrPostLibraryRecentV1LibraryRecentPostApiResponse =
+export type GetLibraryMangaV1LibraryMangaGetApiArg = void;
+export type GetLibraryRecentV1LibraryRecentGetApiResponse =
   /** status 200 Successful Response */ any;
-export type GetOrPostLibraryRecentV1LibraryRecentPostApiArg = void;
+export type GetLibraryRecentV1LibraryRecentGetApiArg = void;
+export type PostLibraryRecentV1LibraryRecentPostApiResponse =
+  /** status 200 Successful Response */ any;
+export type PostLibraryRecentV1LibraryRecentPostApiArg = {
+  data: object | null;
+};
 export type AddTrackToLibraryV1LibraryTracksTrackIdPostApiResponse =
   /** status 200 Successful Response */ any;
 export type AddTrackToLibraryV1LibraryTracksTrackIdPostApiArg = {
@@ -1224,17 +1430,13 @@ export type GetLibraryPlaylistsV1LibraryPlaylistsGetApiArg = void;
 export type CreatePlaylistV1LibraryPlaylistsPostApiResponse =
   /** status 200 Successful Response */ any;
 export type CreatePlaylistV1LibraryPlaylistsPostApiArg = {
-  playlistData: {
-    [key: string]: any;
-  };
+  playlistData: object;
 };
 export type AddTrackToPlaylistV1LibraryPlaylistsPlaylistIdTracksPostApiResponse =
   /** status 200 Successful Response */ any;
 export type AddTrackToPlaylistV1LibraryPlaylistsPlaylistIdTracksPostApiArg = {
   playlistId: string;
-  trackData: {
-    [key: string]: any;
-  };
+  trackData: object;
 };
 export type DeletePlaylistV1LibraryPlaylistsPlaylistIdDeleteApiResponse =
   /** status 200 Successful Response */ any;
@@ -1255,46 +1457,85 @@ export type AddTrackToPlaylistV1PlaylistsPlaylistsPlaylistIdTracksPostApiArg = {
   playlistId: string;
   addTrackRequest: AddTrackRequest;
 };
-export type CommonLikedTracksV1BudBudCommonLikedTracksPostApiResponse =
+export type GetBudProfileV1BudBudProfilePostApiResponse =
   /** status 200 Successful Response */ any;
-export type CommonLikedTracksV1BudBudCommonLikedTracksPostApiArg = {
+export type GetBudProfileV1BudBudProfilePostApiArg = {
   budRequest: BudRequest;
 };
-export type CommonLikedArtistsV1BudBudCommonLikedArtistsPostApiResponse =
+export type CommonLikedTracksV1BudBudLikedTracksPostApiResponse =
   /** status 200 Successful Response */ any;
-export type CommonLikedArtistsV1BudBudCommonLikedArtistsPostApiArg = {
+export type CommonLikedTracksV1BudBudLikedTracksPostApiArg = {
   budRequest: BudRequest;
 };
-export type CommonLikedAlbumsV1BudBudCommonLikedAlbumsPostApiResponse =
+export type CommonLikedArtistsV1BudBudLikedArtistsPostApiResponse =
   /** status 200 Successful Response */ any;
-export type CommonLikedAlbumsV1BudBudCommonLikedAlbumsPostApiArg = {
+export type CommonLikedArtistsV1BudBudLikedArtistsPostApiArg = {
   budRequest: BudRequest;
 };
-export type CommonPlayedTracksV1BudBudCommonPlayedTracksPostApiResponse =
+export type CommonLikedAlbumsV1BudBudLikedAlbumsPostApiResponse =
   /** status 200 Successful Response */ any;
-export type CommonPlayedTracksV1BudBudCommonPlayedTracksPostApiArg = {
+export type CommonLikedAlbumsV1BudBudLikedAlbumsPostApiArg = {
   budRequest: BudRequest;
 };
-export type CommonTopArtistsV1BudBudCommonTopArtistsPostApiResponse =
+export type CommonLikedGenresV1BudBudLikedGenresPostApiResponse =
   /** status 200 Successful Response */ any;
-export type CommonTopArtistsV1BudBudCommonTopArtistsPostApiArg = {
+export type CommonLikedGenresV1BudBudLikedGenresPostApiArg = {
   budRequest: BudRequest;
 };
-export type CommonTopGenresV1BudBudCommonTopGenresPostApiResponse =
+export type CommonLikedAioV1BudBudLikedAioPostApiResponse =
   /** status 200 Successful Response */ any;
-export type CommonTopGenresV1BudBudCommonTopGenresPostApiArg = {
+export type CommonLikedAioV1BudBudLikedAioPostApiArg = {
   budRequest: BudRequest;
 };
-export type CommonTopAnimeV1BudBudCommonTopAnimePostApiResponse =
+export type CommonTopArtistsV1BudBudTopArtistsPostApiResponse =
   /** status 200 Successful Response */ any;
-export type CommonTopAnimeV1BudBudCommonTopAnimePostApiArg = {
+export type CommonTopArtistsV1BudBudTopArtistsPostApiArg = {
   budRequest: BudRequest;
 };
-export type CommonTopMangaV1BudBudCommonTopMangaPostApiResponse =
+export type CommonTopTracksV1BudBudTopTracksPostApiResponse =
   /** status 200 Successful Response */ any;
-export type CommonTopMangaV1BudBudCommonTopMangaPostApiArg = {
+export type CommonTopTracksV1BudBudTopTracksPostApiArg = {
   budRequest: BudRequest;
 };
+export type CommonTopAnimeV1BudBudTopAnimePostApiResponse =
+  /** status 200 Successful Response */ any;
+export type CommonTopAnimeV1BudBudTopAnimePostApiArg = {
+  budRequest: BudRequest;
+};
+export type CommonTopMangaV1BudBudTopMangaPostApiResponse =
+  /** status 200 Successful Response */ any;
+export type CommonTopMangaV1BudBudTopMangaPostApiArg = {
+  budRequest: BudRequest;
+};
+export type CommonPlayedTracksV1BudBudPlayedTracksPostApiResponse =
+  /** status 200 Successful Response */ any;
+export type CommonPlayedTracksV1BudBudPlayedTracksPostApiArg = {
+  budRequest: BudRequest;
+};
+export type GetAdminStatsV1AdminStatsGetApiResponse =
+  /** status 200 Successful Response */ any;
+export type GetAdminStatsV1AdminStatsGetApiArg = void;
+export type GetAllUsersV1AdminUsersGetApiResponse =
+  /** status 200 Successful Response */ any;
+export type GetAllUsersV1AdminUsersGetApiArg = {
+  limit?: number;
+};
+export type GetUserDetailsAdminV1AdminUsersUserIdGetApiResponse =
+  /** status 200 Successful Response */ any;
+export type GetUserDetailsAdminV1AdminUsersUserIdGetApiArg = {
+  userId: string;
+};
+export type BanUserV1AdminUsersUserIdBanPostApiResponse =
+  /** status 200 Successful Response */ any;
+export type BanUserV1AdminUsersUserIdBanPostApiArg = {
+  userId: string;
+};
+export type DeleteConversationAdminV1AdminConversationsConversationIdDeleteApiResponse =
+  /** status 200 Successful Response */ any;
+export type DeleteConversationAdminV1AdminConversationsConversationIdDeleteApiArg =
+  {
+    conversationId: string;
+  };
 export type RootGetApiResponse = /** status 200 Successful Response */ any;
 export type RootGetApiArg = void;
 export type HealthCheckHealthGetApiResponse =
@@ -1304,8 +1545,6 @@ export type ValidationError = {
   loc: (string | number)[];
   msg: string;
   type: string;
-  input?: any;
-  ctx?: object;
 };
 export type HttpValidationError = {
   detail?: ValidationError[];
@@ -1313,9 +1552,7 @@ export type HttpValidationError = {
 export type UserResponse = {
   success: boolean;
   message: string;
-  data: {
-    [key: string]: any;
-  };
+  data: object;
 };
 export type UserRegister = {
   username: string;
@@ -1328,9 +1565,7 @@ export type UserRegister = {
 export type TokenResponse = {
   success: boolean;
   message: string;
-  data: {
-    [key: string]: any;
-  };
+  data: object;
 };
 export type BodyLoginForAccessTokenV1AuthLoginPost = {
   grant_type?: string | null;
@@ -1410,6 +1645,13 @@ export type SwipeRequest = {
   user_id: string;
   action: string;
 };
+export type AddMembersRequest = {
+  user_ids: string[];
+};
+export type UpdateSettingsRequest = {
+  name?: string | null;
+  avatar_url?: string | null;
+};
 export type ConversationCreate = {
   user_ids: string[];
   initial_message?: string | null;
@@ -1418,9 +1660,7 @@ export type MessageSend = {
   conversation_id: string;
   message_type?: string;
   content: string;
-  metadata?: {
-    [key: string]: any;
-  } | null;
+  metadata?: object | null;
 };
 export type ShareContentRequest = {
   conversation_id: string;
@@ -1532,6 +1772,9 @@ export const {
   useGetAppSettingsV1UsersSettingsAppGetQuery,
   useUpdateAppSettingsV1UsersSettingsAppPutMutation,
   useGetUserStatsV1UsersStatsGetQuery,
+  useGetUserInterestsV1UsersInterestsGetQuery,
+  useAddUserInterestV1UsersInterestsCategoryInterestPostMutation,
+  useRemoveUserInterestV1UsersInterestsCategoryInterestDeleteMutation,
   useGetRecentActivityV1UsersActivityRecentGetQuery,
   useGetPotentialMatchesV1MatchingDiscoverGetQuery,
   useSwipeUserV1MatchingSwipePostMutation,
@@ -1543,6 +1786,9 @@ export const {
   useRemoveConnectionV1MatchingConnectionsUserIdDeleteMutation,
   useGetCompatibilityWithUserV1MatchingCompatibilityUserIdGetQuery,
   useGetMatchingStatsV1MatchingStatsGetQuery,
+  useAddConversationMembersV1ChatConversationsConversationIdMembersPostMutation,
+  useRemoveConversationMemberV1ChatConversationsConversationIdMembersUserIdDeleteMutation,
+  useUpdateConversationSettingsV1ChatConversationsConversationIdSettingsPatchMutation,
   useGetConversationsV1ChatConversationsGetQuery,
   useCreateConversationV1ChatConversationsPostMutation,
   useGetConversationDetailsV1ChatConversationsConversationIdGetQuery,
@@ -1577,9 +1823,13 @@ export const {
   usePublicGenresV1DiscoverPublicGenresGetQuery,
   useGetLibrarySummaryV1LibraryGetQuery,
   useGetLibraryTracksV1LibraryTracksGetQuery,
+  useGetLibraryArtistsV1LibraryArtistsGetQuery,
+  useGetLibraryAlbumsV1LibraryAlbumsGetQuery,
+  useGetLibraryGenresV1LibraryGenresGetQuery,
   useGetLibraryAnimeV1LibraryAnimeGetQuery,
-  useGetOrPostLibraryRecentV1LibraryRecentGetQuery,
-  useGetOrPostLibraryRecentV1LibraryRecentPostMutation,
+  useGetLibraryMangaV1LibraryMangaGetQuery,
+  useGetLibraryRecentV1LibraryRecentGetQuery,
+  usePostLibraryRecentV1LibraryRecentPostMutation,
   useAddTrackToLibraryV1LibraryTracksTrackIdPostMutation,
   useRemoveTrackFromLibraryV1LibraryTracksTrackIdDeleteMutation,
   useGetLibraryPlaylistsV1LibraryPlaylistsGetQuery,
@@ -1589,14 +1839,22 @@ export const {
   useGetMyPlaylistsV1PlaylistsPlaylistsMeGetQuery,
   useCreatePlaylistV1PlaylistsPlaylistsPostMutation,
   useAddTrackToPlaylistV1PlaylistsPlaylistsPlaylistIdTracksPostMutation,
-  useCommonLikedTracksV1BudBudCommonLikedTracksPostMutation,
-  useCommonLikedArtistsV1BudBudCommonLikedArtistsPostMutation,
-  useCommonLikedAlbumsV1BudBudCommonLikedAlbumsPostMutation,
-  useCommonPlayedTracksV1BudBudCommonPlayedTracksPostMutation,
-  useCommonTopArtistsV1BudBudCommonTopArtistsPostMutation,
-  useCommonTopGenresV1BudBudCommonTopGenresPostMutation,
-  useCommonTopAnimeV1BudBudCommonTopAnimePostMutation,
-  useCommonTopMangaV1BudBudCommonTopMangaPostMutation,
+  useGetBudProfileV1BudBudProfilePostMutation,
+  useCommonLikedTracksV1BudBudLikedTracksPostMutation,
+  useCommonLikedArtistsV1BudBudLikedArtistsPostMutation,
+  useCommonLikedAlbumsV1BudBudLikedAlbumsPostMutation,
+  useCommonLikedGenresV1BudBudLikedGenresPostMutation,
+  useCommonLikedAioV1BudBudLikedAioPostMutation,
+  useCommonTopArtistsV1BudBudTopArtistsPostMutation,
+  useCommonTopTracksV1BudBudTopTracksPostMutation,
+  useCommonTopAnimeV1BudBudTopAnimePostMutation,
+  useCommonTopMangaV1BudBudTopMangaPostMutation,
+  useCommonPlayedTracksV1BudBudPlayedTracksPostMutation,
+  useGetAdminStatsV1AdminStatsGetQuery,
+  useGetAllUsersV1AdminUsersGetQuery,
+  useGetUserDetailsAdminV1AdminUsersUserIdGetQuery,
+  useBanUserV1AdminUsersUserIdBanPostMutation,
+  useDeleteConversationAdminV1AdminConversationsConversationIdDeleteMutation,
   useRootGetQuery,
   useHealthCheckHealthGetQuery,
 } = injectedRtkApi;

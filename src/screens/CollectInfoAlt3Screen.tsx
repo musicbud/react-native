@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, FlatList } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, FlatList } from 'react-native';
 import { useRouter } from 'expo-router';
+import { DesignSystem } from '../theme/design_system';
 
 const { width, height } = Dimensions.get('window');
 
@@ -47,7 +48,7 @@ const CollectInfoAlt3Screen = () => {
   return (
     <View style={styles.container}>
       <SafeImage
-        source={{/* require('../../assets/ui/extra/Collect information-3.png') */}}
+        source={{/* require('../../assets/ui/extra/Collect information-3.png') */ }}
         style={styles.backgroundImage}
         resizeMode="cover"
       />
@@ -85,7 +86,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
   },
   backgroundImage: {
     width: width,
@@ -94,7 +95,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   overlay: {
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: DesignSystem.colors.overlay,
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
@@ -114,14 +115,14 @@ const styles = StyleSheet.create({
   progressBarContainer: {
     width: '90%',
     height: 6,
-    backgroundColor: '#333',
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
     borderRadius: 3,
     marginTop: 100,
     marginBottom: 50,
   },
   progressBarFill: {
     height: '100%',
-    backgroundColor: '#1E90FF',
+    backgroundColor: DesignSystem.colors.primary,
     borderRadius: 3,
   },
   title: {
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
     marginBottom: 10, // Space between rows
   },
   interestTag: {
-    backgroundColor: '#333',
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
     borderRadius: 20,
     paddingVertical: 10,
     paddingHorizontal: 15,
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
     minWidth: 100, // Adjust based on content
   },
   interestTagSelected: {
-    backgroundColor: '#1E90FF', // Selected state color
+    backgroundColor: DesignSystem.colors.primary, // Selected state color
   },
   interestTagText: {
     color: 'white',
@@ -163,7 +164,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1E90FF',
+    backgroundColor: DesignSystem.colors.primary,
     width: '90%',
     paddingVertical: 15,
     borderRadius: 10,

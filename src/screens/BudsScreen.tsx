@@ -1,6 +1,6 @@
 import React from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, ActivityIndicator, StatusBar } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ActivityIndicator, StatusBar } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useMatching } from '../hooks/useMatching';
 import { LinearGradient } from 'expo-linear-gradient';

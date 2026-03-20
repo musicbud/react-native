@@ -3,7 +3,6 @@ import { Dimensions, View, Text, TouchableOpacity, ScrollView, ActivityIndicator
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAudioPlayer, useAudioPlayerStatus } from 'expo-audio';
 import { Ionicons } from '@expo/vector-icons';
-import { mapJsonToStyles } from '../utils/styleMapper';
 import { SafeImage } from '../components/common/SafeImage';
 
 import { useGetContentDetailsQuery } from '../store/contentApi';
@@ -61,12 +60,7 @@ const DetailsScreen = () => {
     const title = content.name || content.title || 'Unknown Title';
     const sub = content.artist || content.director || content.author || content.studio || type;
 
-    // Define JSON-derived pseudo layout base
-    const screenStyleBase = mapJsonToStyles({
-        properties: {
-            layout: { padding: { top: 40, bottom: 20, left: 24, right: 24 } }
-        }
-    });
+    const screenStyleBase = { paddingTop: 40, paddingBottom: 20, paddingLeft: 24, paddingRight: 24 };
 
     const isPlayable = type === 'track' && content.preview_url;
 
@@ -78,7 +72,7 @@ const DetailsScreen = () => {
     };
 
     return (
-        <ScrollView style={[styles.container, screenStyleBase as any]}>
+        <ScrollView style={[styles.container, screenStyleBase]}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()}>
                     <Ionicons name="chevron-down" size={32} color={DesignSystem.colors.onSurface} />

@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
 import {
-  View, Text, StyleSheet, Image, Dimensions, TouchableOpacity,
+  View, Text, StyleSheet, Dimensions, TouchableOpacity,
   TextInput, FlatList, ActivityIndicator, SafeAreaView, KeyboardAvoidingView, Platform,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -64,7 +64,7 @@ const WatchTogetherScreen = () => {
   if (isLoading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#1E90FF" />
+        <ActivityIndicator size="large" color={DesignSystem.colors.accentBlue} />
         <Text style={styles.loadingText}>Joining party…</Text>
       </View>
     );
@@ -73,7 +73,7 @@ const WatchTogetherScreen = () => {
   if (error) {
     return (
       <View style={styles.centerContainer}>
-        <Ionicons name="alert-circle" size={48} color="#FF3B30" />
+        <Ionicons name="alert-circle" size={48} color={DesignSystem.colors.errorRed} />
         <Text style={styles.errorText}>Failed to load watch party.</Text>
         <TouchableOpacity style={styles.retryBtn} onPress={() => router.back()}>
           <Text style={styles.retryText}>Go Back</Text>
@@ -85,12 +85,12 @@ const WatchTogetherScreen = () => {
   const renderParticipant = ({ item }: { item: any }) => {
     const avatarUrl = item.avatar_url
       || `https://ui-avatars.com/api/?name=${encodeURIComponent(item.username || 'U')}&background=1E90FF&color=fff`;
-    const isCurrentUser = item.id === myProfile?.id;
+    const isCurrentUser = item.id === (myProfile as any)?.id;
 
     return (
       <View style={styles.participantAvatar}>
         <LinearGradient
-          colors={isCurrentUser ? ['#1E90FF', '#0070E0'] : ['#9B59B6', '#6C3483']}
+          colors={isCurrentUser ? [DesignSystem.colors.primary, DesignSystem.colors.primaryDark] : [DesignSystem.colors.surfaceContainerHighest, DesignSystem.colors.surfaceContainerHigh]}
           style={styles.participantRing}
         >
           <SafeImage source={{ uri: avatarUrl }} style={styles.participantImg} />
@@ -103,7 +103,7 @@ const WatchTogetherScreen = () => {
   };
 
   const renderMessage = ({ item }: { item: any }) => {
-    const isMe = item.sender_id === myProfile?.id;
+    const isMe = item.sender_id === (myProfile as any)?.id;
     return (
       <View style={[styles.msgRow, isMe ? styles.msgRowMe : styles.msgRowThem]}>
         <View style={[styles.msgBubble, isMe ? styles.msgBubbleMe : styles.msgBubbleThem]}>
@@ -117,7 +117,7 @@ const WatchTogetherScreen = () => {
   return (
     <View style={styles.container}>
       {/* Dark gradient background */}
-      <LinearGradient colors={['#0a0a1a', '#0d0d0d']} style={StyleSheet.absoluteFillObject} />
+      <LinearGradient colors={[DesignSystem.colors.background, DesignSystem.colors.backgroundDark]} style={StyleSheet.absoluteFillObject} />
 
       <SafeAreaView style={styles.safeArea}>
         {/* Header */}
@@ -133,14 +133,14 @@ const WatchTogetherScreen = () => {
             style={styles.headerBtn}
             onPress={() => setIsChatVisible(!isChatVisible)}
           >
-            <Ionicons name={isChatVisible ? 'chatbubbles' : 'chatbubbles-outline'} size={22} color="#1E90FF" />
+            <Ionicons name={isChatVisible ? 'chatbubbles' : 'chatbubbles-outline'} size={22} color={DesignSystem.colors.accentBlue} />
           </TouchableOpacity>
         </View>
 
         {/* Video Player Placeholder */}
         <View style={styles.videoPlayer}>
-          <LinearGradient colors={['#1a1a2e', '#16213e']} style={styles.videoInner}>
-            <Ionicons name="film" size={48} color="#2a2a4a" />
+          <LinearGradient colors={[DesignSystem.colors.surfaceContainer, DesignSystem.colors.surfaceContainerHigh]} style={styles.videoInner}>
+            <Ionicons name="film" size={48} color={DesignSystem.colors.surfaceContainerHighest} />
             <Text style={styles.videoPlaceholder}>
               {sharedTitle || 'No content selected'}
             </Text>
@@ -194,7 +194,7 @@ const WatchTogetherScreen = () => {
               <TextInput
                 style={styles.chatInput}
                 placeholder="Chat with the party…"
-                placeholderTextColor="#555"
+                placeholderTextColor={DesignSystem.colors.neutral600}
                 value={chatInput}
                 onChangeText={setChatInput}
                 onSubmitEditing={handleSend}
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   videoPlayer: { marginHorizontal: 16, borderRadius: 16, overflow: 'hidden', height: height * 0.28 },
   videoInner: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
   videoPlaceholder: { color: DesignSystem.colors.textMuted, fontSize: 15 },
-  videoControls: { position: 'absolute', bottom: 0, left: 0, right: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', padding: 14, backgroundColor: 'rgba(0,0,0,0.6)' },
+  videoControls: { position: 'absolute', bottom: 0, left: 0, right: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around', padding: 14, backgroundColor: DesignSystem.colors.overlay },
   videoBtn: { width: 36, height: 36, justifyContent: 'center', alignItems: 'center' },
   playPauseBtn: { width: 48, height: 48, borderRadius: 24, backgroundColor: DesignSystem.colors.primary, justifyContent: 'center', alignItems: 'center' },
   participantsRow: { paddingHorizontal: 16, paddingVertical: 14, gap: 16 },

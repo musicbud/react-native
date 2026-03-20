@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 
 const { width, height } = Dimensions.get('window');

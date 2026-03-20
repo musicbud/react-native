@@ -1,6 +1,7 @@
 import React from 'react';
 import { SafeImage } from '../../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, TouchableOpacity, ViewStyle, StyleProp } from 'react-native';
+
+import { View, Text, StyleSheet, TouchableOpacity, ViewStyle, StyleProp } from 'react-native';
 import { DesignSystem } from '../../theme/design_system';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -75,7 +76,7 @@ export const ModernCard: React.FC<ModernCardProps> = ({
     if (variant === 'glass') {
         return (
             <BaseWrapper onPress={onTap} style={[{ margin, borderRadius, overflow: 'hidden' }, style]}>
-                <View style={[styles.card, { backgroundColor: getBackgroundColor(), padding, borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' }]}>
+                <View style={[styles.card, { backgroundColor: getBackgroundColor(), padding, borderWidth: 1, borderColor: DesignSystem.colors.border }]}>
                     {children}
                 </View>
             </BaseWrapper>

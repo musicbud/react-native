@@ -1,6 +1,7 @@
 import React from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity } from 'react-native';
+import { DesignSystem } from '../theme/design_system';
 import { useRouter } from 'expo-router'; // Import useRouter
 
 const { width, height } = Dimensions.get('window');
@@ -11,7 +12,7 @@ const OnboardingScreen = () => {
   return (
     <View style={styles.container}>
       <SafeImage
-        source={{/* require('../../assets/ui/extra/on boarding.png') */}} // The main image for onboarding
+        source={{/* require('../../assets/ui/extra/on boarding.png') */ }} // The main image for onboarding
         style={styles.backgroundImage}
         resizeMode="cover"
       />
@@ -35,7 +36,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end', // Align content to the bottom
     alignItems: 'center',
-    backgroundColor: '#000', // Assuming a dark background for the static image
+    backgroundColor: DesignSystem.colors.background, // Assuming a dark background for the static image
   },
   backgroundImage: {
     width: width,

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useForgotPasswordV1AuthForgotPasswordPostMutation } from '../store/api';
+import { DesignSystem } from '../theme/design_system';
 
 const { width, height } = Dimensions.get('window');
 
@@ -61,7 +62,7 @@ const ResendEmailScreen = () => {
           <TextInput
             style={styles.input}
             placeholder="hebakhaledqassem@gmail.com"
-            placeholderTextColor="#888"
+            placeholderTextColor={DesignSystem.colors.textMuted}
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -71,7 +72,7 @@ const ResendEmailScreen = () => {
 
         <TouchableOpacity style={styles.sendLinkButton} onPress={handleSendLink} disabled={isLoading}>
           {isLoading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={DesignSystem.colors.onPrimary} />
           ) : (
             <Text style={styles.sendLinkButtonText}>Send Link to Email</Text>
           )}
@@ -86,7 +87,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: DesignSystem.colors.background,
   },
   backgroundImage: {
     width: width,
@@ -95,7 +96,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   overlay: {
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: DesignSystem.colors.overlay,
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
@@ -108,20 +109,20 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   backButtonText: {
-    color: 'white',
+    color: DesignSystem.colors.onSurface,
     fontSize: 24,
     fontWeight: 'bold',
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     marginBottom: 10,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: 'white',
+    color: DesignSystem.colors.textSecondary,
     marginBottom: 40,
     textAlign: 'center',
   },
@@ -131,21 +132,21 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 14,
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     marginBottom: 5,
     alignSelf: 'flex-start',
   },
   input: {
     width: '100%',
-    height: 50,
-    backgroundColor: '#333',
-    borderRadius: 10,
+    paddingVertical: 12,
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
+    borderRadius: 24,
     paddingHorizontal: 15,
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 16,
   },
   sendLinkButton: {
-    backgroundColor: '#1E90FF',
+    backgroundColor: DesignSystem.colors.primary,
     width: '100%',
     paddingVertical: 15,
     borderRadius: 10,
@@ -153,7 +154,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   sendLinkButtonText: {
-    color: 'white',
+    color: DesignSystem.colors.onPrimary,
     fontSize: 18,
     fontWeight: 'bold',
   },

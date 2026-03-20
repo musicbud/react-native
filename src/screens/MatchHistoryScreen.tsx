@@ -1,6 +1,6 @@
 import React from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, Image, TouchableOpacity, FlatList, SafeAreaView, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, SafeAreaView, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useGetMatchesV1MatchingMatchesGetQuery } from '../store/api';

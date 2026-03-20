@@ -1,13 +1,17 @@
 import React, { useState } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, Image, ScrollView, TouchableOpacity, FlatList, TextInput, StatusBar, ActivityIndicator, Modal, Alert } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, FlatList, TextInput, StatusBar, ActivityIndicator, Modal, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import {
   usePublicGenresV1DiscoverPublicGenresGetQuery,
   usePublicDiscoverRootV1DiscoverPublicGetQuery,
   usePublicTrendingV1DiscoverPublicTrendingGetQuery,
   useGetMyPlaylistsV1PlaylistsPlaylistsMeGetQuery,
-  useAddTrackToPlaylistV1LibraryPlaylistsPlaylistIdTracksPostMutation
+  useAddTrackToPlaylistV1LibraryPlaylistsPlaylistIdTracksPostMutation,
+  useCommonLikedTracksV1BudBudLikedTracksPostMutation,
+  useCommonLikedArtistsV1BudBudLikedArtistsPostMutation,
+  useAddUserInterestV1UsersInterestsCategoryInterestPostMutation,
+  useRemoveUserInterestV1UsersInterestsCategoryInterestDeleteMutation
 } from '../store/api';
 import { LinearGradient } from 'expo-linear-gradient';
 import { usePlayer } from '../context/PlayerContext';
@@ -25,12 +29,42 @@ const DiscoverScreen = () => {
   const [isAddToPlaylistModalVisible, setAddToPlaylistModalVisible] = useState(false);
 
   // Fetch data
-  const { data: genresWrapper, isLoading: isGenresLoading } = usePublicGenresV1DiscoverPublicGenresGetQuery({});
+  const { data: genresWrapper, isLoading: isGenresLoading, refetch: refetchGenres } = usePublicGenresV1DiscoverPublicGenresGetQuery({});
   const { data: discoverContentWrapper, isLoading: isDiscoverContentLoading } = usePublicDiscoverRootV1DiscoverPublicGetQuery();
   const { data: trendingTracksWrapper, isLoading: isTrendingTracksLoading } = usePublicTrendingV1DiscoverPublicTrendingGetQuery({ contentType: 'tracks' });
   const { data: playlistsWrapper, isLoading: isPlaylistsLoading } = useGetMyPlaylistsV1PlaylistsPlaylistsMeGetQuery();
 
   const [addTrackToPlaylist, { isLoading: isAddingTrack }] = useAddTrackToPlaylistV1LibraryPlaylistsPlaylistIdTracksPostMutation();
+  const [likeTrack] = useCommonLikedTracksV1BudBudLikedTracksPostMutation();
+  const [likeArtist] = useCommonLikedArtistsV1BudBudLikedArtistsPostMutation();
+  const [addInterest] = useAddUserInterestV1UsersInterestsCategoryInterestPostMutation();
+  const [removeInterest] = useRemoveUserInterestV1UsersInterestsCategoryInterestDeleteMutation();
+
+  const handleLike = async (id: string, type: string) => {
+    try {
+      if (type === 'track') {
+        await likeTrack({ budRequest: { identifier: id } }).unwrap();
+      } else if (type === 'artist') {
+        await likeArtist({ budRequest: { identifier: id } }).unwrap();
+      }
+      Alert.alert("Liked!", `Added to your favorites.`);
+    } catch {
+      Alert.alert("Error", "Failed to like item.");
+    }
+  };
+
+  const toggleInterest = async (category: string, interest: string, isSelected: boolean) => {
+    try {
+      if (isSelected) {
+        await removeInterest({ category, interest }).unwrap();
+      } else {
+        await addInterest({ category, interest }).unwrap();
+      }
+      refetchGenres();
+    } catch {
+      Alert.alert("Error", "Failed to update interest.");
+    }
+  };
 
   // Handle loading
   if (isGenresLoading || isDiscoverContentLoading || isTrendingTracksLoading) {
@@ -77,7 +111,7 @@ const DiscoverScreen = () => {
   };
 
   const renderGenreItem = ({ item }: { item: any }) => (
-    <TouchableOpacity onPress={() => router.push(`/SearchScreen?category=${item.name}`)}>
+    <TouchableOpacity onPress={() => toggleInterest('music', item.name, false)}>
       <LinearGradient
         colors={[DesignSystem.colors.surfaceContainerHigh, DesignSystem.colors.surfaceContainer]}
         start={{ x: 0, y: 0 }}
@@ -96,7 +130,7 @@ const DiscoverScreen = () => {
 
         {/* Header Hero Section */}
         <LinearGradient
-          colors={['rgba(76, 175, 80, 0.12)', 'transparent']}
+          colors={[DesignSystem.colors.primary + '1F', 'transparent']}
           className="pt-16 px-6 pb-8 rounded-b-[48px]"
         >
           <Text className="text-text-primary font-display font-bold text-4xl mb-6 tracking-tight">
@@ -123,6 +157,7 @@ const DiscoverScreen = () => {
             title="Popular Artists"
             data={popularArtists}
             onItemPress={handleArtistPress}
+            onItemLikePress={(item) => handleLike(item.id, 'artist')}
             emptyText="No popular artists found."
           />
 
@@ -132,6 +167,7 @@ const DiscoverScreen = () => {
             size="small"
             onItemPress={handleTrackPress}
             onItemMorePress={handleOptionsPress}
+            onItemLikePress={(item) => handleLike(item.id, 'track')}
             emptyText="No trending tracks available."
           />
 
@@ -159,7 +195,7 @@ const DiscoverScreen = () => {
         onRequestClose={() => setAddToPlaylistModalVisible(false)}
       >
         <View className="flex-1 bg-black/70 justify-end">
-          <View className="bg-[#181A20] rounded-t-[40px] p-8 pb-12 border-t border-white/5 shadow-2xl">
+          <View style={{ backgroundColor: DesignSystem.colors.surfaceContainerHighest }} className="rounded-t-[40px] p-8 pb-12 border-t border-white/5 shadow-2xl">
             <View className="w-12 h-1.5 bg-white/10 rounded-full self-center mb-8" />
 
             <View className="flex-row justify-between items-center mb-8">
@@ -173,11 +209,11 @@ const DiscoverScreen = () => {
             </View>
 
             {isPlaylistsLoading ? (
-              <ActivityIndicator color="#E11D48" className="my-10" />
+              <ActivityIndicator color={DesignSystem.colors.primary} className="my-10" />
             ) : (!playlistsData || playlistsData.length === 0) ? (
               <View className="items-center my-10 px-8">
                 <View className="w-16 h-16 bg-white/5 rounded-full items-center justify-center mb-4">
-                  <Ionicons name="musical-notes-outline" size={32} color="#4B5563" />
+                  <Ionicons name="musical-notes-outline" size={32} color={DesignSystem.colors.textMuted} />
                 </View>
                 <Text className="text-text-secondary text-center font-sans text-lg">You don&apos;t have any playlists yet.</Text>
               </View>
@@ -201,7 +237,7 @@ const DiscoverScreen = () => {
                       <Text className="text-text-secondary font-sans text-sm">{item.track_count || 0} tracks</Text>
                     </View>
                     <View className="w-10 h-10 rounded-full bg-primary/10 items-center justify-center">
-                      <Ionicons name="add" size={24} color="#4ADE80" />
+                      <Ionicons name="add" size={24} color={DesignSystem.colors.primary} />
                     </View>
                   </TouchableOpacity>
                 )}

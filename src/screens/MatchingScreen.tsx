@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, Animated, PanResponder, ActivityIndicator, Alert, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, Animated, PanResponder, ActivityIndicator, Alert, SafeAreaView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { DesignSystem } from '../theme/design_system';

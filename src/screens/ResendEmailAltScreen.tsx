@@ -1,7 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, TextInput, Keyboard } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
+import { DesignSystem } from '../theme/design_system';
 
 const { width, height } = Dimensions.get('window');
 
@@ -94,9 +95,7 @@ const ResendEmailAltScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: DesignSystem.colors.background,
   },
   backgroundImage: {
     width: width,
@@ -105,7 +104,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   overlay: {
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: DesignSystem.colors.overlay,
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
@@ -118,20 +117,20 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   backButtonText: {
-    color: 'white',
+    color: DesignSystem.colors.onSurface,
     fontSize: 24,
     fontWeight: 'bold',
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     marginBottom: 10,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: 'white',
+    color: DesignSystem.colors.textSecondary,
     marginBottom: 40,
     textAlign: 'center',
   },
@@ -144,14 +143,15 @@ const styles = StyleSheet.create({
   codeInput: {
     width: 45, // Adjust size as needed for digits
     height: 50,
-    backgroundColor: '#333',
-    borderRadius: 10,
-    color: 'white',
+    paddingVertical: 12,
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
+    borderRadius: 24,
+    color: DesignSystem.colors.textPrimary,
     fontSize: 24,
     textAlign: 'center',
   },
   confirmButton: {
-    backgroundColor: '#1E90FF',
+    backgroundColor: DesignSystem.colors.primary,
     width: '100%',
     paddingVertical: 15,
     borderRadius: 10,
@@ -160,12 +160,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   confirmButtonText: {
-    color: 'white',
+    color: DesignSystem.colors.onPrimary,
     fontSize: 18,
     fontWeight: 'bold',
   },
   resendLinkText: {
-    color: '#1E90FF',
+    color: DesignSystem.colors.primary,
     fontSize: 14,
     marginTop: 10,
   },

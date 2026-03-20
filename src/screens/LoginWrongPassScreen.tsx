@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
+import { DesignSystem } from '../theme/design_system';
 
 const { width, height } = Dimensions.get('window');
 
@@ -23,7 +24,7 @@ const LoginWrongPassScreen = () => {
   return (
     <View style={styles.container}>
       <SafeImage
-        source={{/* require('../../assets/ui/extra/LogIn-WrongPass.png') */}}
+        source={{/* require('../../assets/ui/extra/LogIn-WrongPass.png') */ }}
         style={styles.backgroundImage}
         resizeMode="cover"
       />
@@ -50,14 +51,14 @@ const LoginWrongPassScreen = () => {
             <TextInput
               style={styles.passwordInput}
               placeholder="Enter your password"
-              placeholderTextColor="#888"
+              placeholderTextColor={DesignSystem.colors.textMuted}
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
               autoCapitalize="none"
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
-              <Text style={{ color: '#888' }}>{showPassword ? 'Hide' : 'Show'}</Text>
+              <Text style={{ color: DesignSystem.colors.textSecondary }}>{showPassword ? 'Hide' : 'Show'}</Text>
             </TouchableOpacity>
           </View>
           {loginError && (
@@ -74,7 +75,7 @@ const LoginWrongPassScreen = () => {
 
         <View style={styles.linksRow}>
           <TouchableOpacity onPress={() => router.push('/SignUpScreen')}>
-            <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
+            <Text style={styles.linkText}>Don&apos;t have an account? Sign Up</Text>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push('/ResendEmailScreen')}>
             <Text style={styles.linkText}>Forgot Password?</Text>
@@ -103,9 +104,7 @@ const LoginWrongPassScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: DesignSystem.colors.background,
   },
   backgroundImage: {
     width: width,
@@ -123,12 +122,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     marginBottom: 10,
   },
   subtitle: {
     fontSize: 16,
-    color: 'white',
+    color: DesignSystem.colors.textSecondary,
     marginBottom: 40,
   },
   inputGroup: {
@@ -137,17 +136,17 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 14,
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     marginBottom: 5,
     alignSelf: 'flex-start',
   },
   input: {
     width: '100%',
     height: 50,
-    backgroundColor: '#333',
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
     borderRadius: 10,
     paddingHorizontal: 15,
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 16,
   },
   passwordInputContainer: {
@@ -155,13 +154,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     width: '100%',
     height: 50,
-    backgroundColor: '#333',
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
     borderRadius: 10,
     paddingHorizontal: 15,
   },
   passwordInput: {
     flex: 1,
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 16,
   },
   eyeIcon: {
@@ -174,12 +173,12 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   errorMessage: {
-    color: 'red',
+    color: DesignSystem.colors.errorRed,
     fontSize: 12,
     marginLeft: 5,
   },
   loginButton: {
-    backgroundColor: '#1E90FF',
+    backgroundColor: DesignSystem.colors.primary,
     width: '100%',
     paddingVertical: 15,
     borderRadius: 10,
@@ -188,7 +187,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   loginButtonText: {
-    color: 'white',
+    color: DesignSystem.colors.onPrimary,
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -200,11 +199,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
   },
   linkText: {
-    color: '#1E90FF',
+    color: DesignSystem.colors.primary,
     fontSize: 14,
   },
   orText: {
-    color: 'white',
+    color: DesignSystem.colors.textSecondary,
     fontSize: 16,
     marginBottom: 20,
   },
@@ -219,8 +218,8 @@ const styles = StyleSheet.create({
   socialIconContainer: {
     width: 50,
     height: 50,
-    borderRadius: 25,
-    backgroundColor: 'white',
+    position: 'absolute',
+    backgroundColor: DesignSystem.colors.overlay,
     justifyContent: 'center',
     alignItems: 'center',
   },

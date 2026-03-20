@@ -1,6 +1,6 @@
 import React from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, ImageProps, ScrollView, TouchableOpacity, ActivityIndicator, StatusBar } from 'react-native';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StatusBar } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import {
@@ -37,7 +37,7 @@ const HomeScreen = () => {
     return (
       <View className="flex-1 justify-center items-center bg-background">
         <StatusBar barStyle="light-content" />
-        <ActivityIndicator size="large" color="#4ADE80" />
+        <ActivityIndicator size="large" color={DesignSystem.colors.primary} />
       </View>
     );
   }
@@ -47,7 +47,7 @@ const HomeScreen = () => {
       <View className="flex-1 justify-center items-center bg-background px-8">
         <StatusBar barStyle="light-content" />
         <View className="w-20 h-20 bg-red-500/10 rounded-full items-center justify-center mb-6">
-          <Ionicons name="alert-circle" size={40} color="#EF4444" />
+          <Ionicons name="alert-circle" size={40} color={DesignSystem.colors.errorRed} />
         </View>
         <Text className="text-text-primary text-xl font-display font-bold text-center mb-2">Oops! Something went wrong</Text>
         <Text className="text-text-secondary text-base font-sans text-center mb-8">We couldn&apos;t load your music feed just now. Please try again.</Text>
@@ -117,10 +117,10 @@ const HomeScreen = () => {
 
           <View className="flex-row items-center space-x-3">
             <TouchableOpacity className="w-11 h-11 bg-background-layer1 rounded-2xl items-center justify-center border border-white/5">
-              <Ionicons name="notifications-outline" size={22} color="#F8FAFC" />
+              <Ionicons name="notifications-outline" size={22} color={DesignSystem.colors.textPrimary} />
             </TouchableOpacity>
             <TouchableOpacity className="w-11 h-11 bg-background-layer1 rounded-2xl items-center justify-center border border-white/5">
-              <Ionicons name="search-outline" size={22} color="#F8FAFC" />
+              <Ionicons name="search-outline" size={22} color={DesignSystem.colors.textPrimary} />
             </TouchableOpacity>
           </View>
         </Animated.View>
@@ -186,7 +186,7 @@ const HomeScreen = () => {
                 resizeMode="cover"
               />
               <LinearGradient
-                colors={['transparent', 'rgba(15, 14, 18, 0.95)']}
+                colors={['transparent', DesignSystem.colors.background]}
                 className="absolute bottom-0 left-0 right-0 h-40 justify-end p-8"
               >
                 <View className="flex-row items-center mb-2">

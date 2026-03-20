@@ -1,0 +1,30 @@
+* Host localhost:8081 was resolved.
+* IPv6: ::1
+* IPv4: 127.0.0.1
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0*   Trying [::1]:8081...
+* Connected to localhost (::1) port 8081
+* using HTTP/1.x
+> GET / HTTP/1.1
+> Host: localhost:8081
+> User-Agent: curl/8.15.0
+> Accept: */*
+> 
+* Request completely sent off
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:01 --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:02 --:--:--     0  0     0    0     0    0     0      0      0 --:--:--  0:00:03 --:--:--     0< HTTP/1.1 500 Internal Server Error
+< X-Content-Type-Options: nosniff
+< Surrogate-Control: no-store
+< Cache-Control: no-store, no-cache, must-revalidate, proxy-revalidate
+< Pragma: no-cache
+< Expires: 0
+< content-type: text/html
+< Date: Sun, 01 Mar 2026 01:43:08 GMT
+< Connection: keep-alive
+< Keep-Alive: timeout=5
+< Transfer-Encoding: chunked
+< 
+{ [3317 bytes data]
+100  3310    0  3310    0     0    962      0 --:--:--  0:00:03 --:--:--   962
+* Connection #0 to host localhost left intact
+<html><head><style>#root,body,html{height:100%;background-color:black}body{overflow:hidden}#root{display:flex}</style></head><body><div id="root"></div><script id="_expo-static-error" type="application/json">{"selectedLogIndex":0,"isDisabled":false,"logs":[{"symbolicated":{"stack":{"error":null,"stack":[],"status":"COMPLETE"},"component":{"error":null,"stack":null,"status":"NONE"}},"callbacks":{},"componentStackCache":null,"level":"resolution","type":"error","message":{"content":"Unable to resolve module ./views/Sitemap","substitutions":[]},"stack":[],"category":"/home/mahmoud/Documents/GitHub/musicbud/react-native/node_modules/expo-router/build/exports.js-1-1","componentStack":[],"codeFrame":{"fileName":"/home/mahmoud/Documents/GitHub/musicbud/react-native/node_modules/expo-router/build/exports.js","location":null,"content":"\u001b[0m \u001b[90m 67 |\u001b[39m \u001b[36mvar\u001b[39m \u001b[33mUnmatched_1\u001b[39m \u001b[33m=\u001b[39m require(\u001b[32m\"./views/Unmatched\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 68 |\u001b[39m \u001b[33mObject\u001b[39m\u001b[33m.\u001b[39mdefineProperty(exports\u001b[33m,\u001b[39m \u001b[32m\"Unmatched\"\u001b[39m\u001b[33m,\u001b[39m { enumerable\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m\u001b[33m,\u001b[39m \u001b[36mget\u001b[39m\u001b[33m:\u001b[39m \u001b[36mfunction\u001b[39m () { \u001b[36mreturn\u001b[39m \u001b[33mUnmatched_1\u001b[39m\u001b[33m.\u001b[39m\u001b[33mUnmatched\u001b[39m\u001b[33m;\u001b[39m } })\u001b[33m;\u001b[39m\n\u001b[31m\u001b[1m>\u001b[22m\u001b[39m\u001b[90m 69 |\u001b[39m \u001b[36mvar\u001b[39m \u001b[33mSitemap_1\u001b[39m \u001b[33m=\u001b[39m require(\u001b[32m\"./views/Sitemap\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m    |\u001b[39m                          \u001b[31m\u001b[1m^\u001b[22m\u001b[39m\n \u001b[90m 70 |\u001b[39m \u001b[33mObject\u001b[39m\u001b[33m.\u001b[39mdefineProperty(exports\u001b[33m,\u001b[39m \u001b[32m\"Sitemap\"\u001b[39m\u001b[33m,\u001b[39m { enumerable\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m\u001b[33m,\u001b[39m \u001b[36mget\u001b[39m\u001b[33m:\u001b[39m \u001b[36mfunction\u001b[39m () { \u001b[36mreturn\u001b[39m \u001b[33mSitemap_1\u001b[39m\u001b[33m.\u001b[39m\u001b[33mSitemap\u001b[39m\u001b[33m;\u001b[39m } })\u001b[33m;\u001b[39m\n \u001b[90m 71 |\u001b[39m \u001b[36mvar\u001b[39m useSitemap_1 \u001b[33m=\u001b[39m require(\u001b[32m\"./views/useSitemap\"\u001b[39m)\u001b[33m;\u001b[39m\n \u001b[90m 72 |\u001b[39m \u001b[33mObject\u001b[39m\u001b[33m.\u001b[39mdefineProperty(exports\u001b[33m,\u001b[39m \u001b[32m\"useSitemap\"\u001b[39m\u001b[33m,\u001b[39m { enumerable\u001b[33m:\u001b[39m \u001b[36mtrue\u001b[39m\u001b[33m,\u001b[39m \u001b[36mget\u001b[39m\u001b[33m:\u001b[39m \u001b[36mfunction\u001b[39m () { \u001b[36mreturn\u001b[39m useSitemap_1\u001b[33m.\u001b[39museSitemap\u001b[33m;\u001b[39m } })\u001b[33m;\u001b[39m\u001b[0m\n"},"isComponentError":false,"count":1}]}</script><script src=/node_modules/.pnpm/expo-router@55.0.3_@expo+log-box@55.0.7_@expo+metro-runtime@55.0.6_@types+react@19.2.14_1d840ad706aa679079dd94766af56880/node_modules/expo-router/_error.bundle?platform=web&dev=true&hot=false&transform.engine=hermes&transform.routerRoot=app&unstable_transformProfile=hermes-stable></script></body></html>

@@ -8,6 +8,7 @@ interface MediaCarouselProps {
     data: any[];
     onItemPress: (item: any) => void;
     onItemMorePress?: (item: any) => void;
+    onItemLikePress?: (item: any) => void;
     emptyText?: string;
     size?: 'small' | 'medium' | 'large';
 }
@@ -17,6 +18,7 @@ export const MediaCarousel = ({
     data,
     onItemPress,
     onItemMorePress,
+    onItemLikePress,
     emptyText = "No content available.",
     size = 'medium'
 }: MediaCarouselProps) => {
@@ -34,6 +36,7 @@ export const MediaCarousel = ({
                         size={size}
                         onPress={() => onItemPress(item)}
                         onMorePress={() => onItemMorePress?.(item)}
+                        onLikePress={() => onItemLikePress?.(item)}
                     />
                 )}
                 showsHorizontalScrollIndicator={false}

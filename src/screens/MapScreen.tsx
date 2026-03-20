@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, StatusBar, ActivityIndicator, TouchableOpacity,
 import { useRouter } from 'expo-router';
 
 import { DesignSystem } from '../theme/design_system';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { IconSymbol } from '../../components/ui/icon-symbol';
 
 // Mocks the same data the Flutter `LoadPlayedTracksWithLocation()` relied on
 const mockPlayedTracks = [
@@ -167,12 +167,12 @@ const styles = StyleSheet.create({
     },
     calloutTitle: {
         ...DesignSystem.typography.titleSmall,
-        color: '#000',
+        color: DesignSystem.colors.backgroundDark,
         fontWeight: 'bold',
     },
     calloutArtist: {
         ...DesignSystem.typography.labelSmall,
-        color: '#555',
+        color: DesignSystem.colors.neutral600,
     }
 });
 

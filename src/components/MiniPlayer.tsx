@@ -1,8 +1,9 @@
 import React from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { usePlayer } from '../context/PlayerContext';
 import { useRouter } from 'expo-router';
+import { DesignSystem } from '../theme/design_system';
 
 // This component will sit at the bottom of the screens above the tab bar.
 export const MiniPlayer = () => {
@@ -58,10 +59,10 @@ const styles = StyleSheet.create({
         bottom: 80, // High enough to sit above tabs, adjust based on your tab bar height
         left: 10,
         right: 10,
-        backgroundColor: '#1E1E1E',
+        backgroundColor: DesignSystem.colors.surfaceContainer,
         borderRadius: 12,
         borderWidth: 1,
-        borderColor: '#333',
+        borderColor: DesignSystem.colors.border,
         overflow: 'hidden',
         boxShadow: '0px 4px 4px rgba(0, 0, 0, 0.3)',
     },
@@ -74,7 +75,7 @@ const styles = StyleSheet.create({
         width: 44,
         height: 44,
         borderRadius: 8,
-        backgroundColor: '#333',
+        backgroundColor: DesignSystem.colors.surfaceContainerHighest,
     },
     trackInfo: {
         flex: 1,
@@ -82,13 +83,13 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
     },
     title: {
-        color: 'white',
+        color: DesignSystem.colors.textPrimary,
         fontSize: 14,
         fontWeight: 'bold',
         marginBottom: 2,
     },
     artist: {
-        color: '#aaa',
+        color: DesignSystem.colors.textSecondary,
         fontSize: 12,
     },
     controls: {
@@ -101,11 +102,11 @@ const styles = StyleSheet.create({
     },
     progressBarBg: {
         height: 3,
-        backgroundColor: '#333',
+        backgroundColor: DesignSystem.colors.surfaceContainerHighest,
         width: '100%',
     },
     progressBarFill: {
         height: '100%',
-        backgroundColor: '#1E90FF',
+        backgroundColor: DesignSystem.colors.primary,
     }
 });

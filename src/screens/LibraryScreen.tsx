@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, ActivityIndicator, StatusBar, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, FlatList, ActivityIndicator, StatusBar } from 'react-native';
 import { useGetMyPlaylistsV1PlaylistsPlaylistsMeGetQuery } from '../store/api';
 import { DesignSystem } from '../theme/design_system';
-import { SectionHeader } from '../components/common/SectionHeader';
 import { ModernButton } from '../components/common/ModernButton';
 import { ModernCard } from '../components/common/ModernCard';
-import { LinearGradient } from 'expo-linear-gradient';
-import { IconSymbol } from '@/components/ui/icon-symbol';
+import { IconSymbol } from '../../components/ui/icon-symbol';
 
 const TABS = ['Playlists', 'Liked Songs', 'Downloads'];
 
@@ -16,8 +14,7 @@ const LibraryScreen = () => {
 
     const {
         data: playlistsWrapper,
-        isLoading: isPlaylistsLoading,
-        refetch: refetchPlaylists
+        isLoading: isPlaylistsLoading
     } = useGetMyPlaylistsV1PlaylistsPlaylistsMeGetQuery();
 
     const playlists = (playlistsWrapper as any)?.data || playlistsWrapper || [];

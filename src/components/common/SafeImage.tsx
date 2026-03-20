@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Image, ImageProps, View, Text } from 'react-native';
+import { ImageProps, Image } from 'react-native';
 
 interface SafeImageProps extends ImageProps {
     fallbackUri?: string;

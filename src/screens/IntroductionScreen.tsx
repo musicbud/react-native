@@ -1,13 +1,11 @@
 // musicbud-expo/src/screens/IntroductionScreen.tsx
 import React from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { StyleSheet, View, Text, Image, Linking, TouchableOpacity, Dimensions } from 'react-native';
+import { StyleSheet, View, Text, Linking, TouchableOpacity, Dimensions } from 'react-native';
 
 const { width, height } = Dimensions.get('window');
 
 const imgProfile = "https://www.figma.com/api/mcp/asset/fc5ded98-2cc4-4717-8bdf-01b0e8727734";
-const imgLinks = "https://www.figma.com/api/mcp/asset/6867ec56-de00-4930-8be6-e7743918eaa4";
-const imgLinks1 = "https://www.figma.com/api/mcp/asset/2c80a409-5e5d-4767-9139-44f9f1f61575";
 const imgVector = "https://www.figma.com/api/mcp/asset/2b2ccfe6-5e5d-4869-887d-3ed63655d7c0";
 const imgSocialBehance = "https://www.figma.com/api/mcp/asset/b7699159-991b-4075-9b76-ba7aab98efb1";
 const imgVector1 = "https://www.figma.com/api/mcp/asset/50867cd1-8989-4a99-8f08-8957f27c1433";

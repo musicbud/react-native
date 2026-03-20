@@ -10,6 +10,7 @@ import {
     interpolate,
     Extrapolation,
 } from 'react-native-reanimated';
+import { DesignSystem } from '../../theme/design_system';
 
 interface Props {
     isPlaying: boolean;
@@ -106,7 +107,7 @@ export const AudioVisualizer: React.FC<Props> = ({ isPlaying, width = 100, heigh
                     <SkiaLinearGradient
                         start={vec(0, 0)}
                         end={vec(width, 0)}
-                        colors={['#4ADE80', '#3b82f6']}
+                        colors={[DesignSystem.colors.primary, DesignSystem.colors.accentBlue]}
                     />
                 </Path>
             </Canvas>

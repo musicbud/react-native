@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, TextInput, Alert, StatusBar, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, TextInput, Alert, StatusBar, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useRegisterV1AuthRegisterPostMutation } from '../store/api';
 import { DesignSystem } from '../theme/design_system';
@@ -200,12 +200,10 @@ const styles = StyleSheet.create({
     ...DesignSystem.typography.titleLarge,
     color: DesignSystem.colors.onSurface,
     marginBottom: DesignSystem.spacing.xxs,
-    fontSize: 24,
-    fontWeight: '600',
   },
   subtitle: {
     ...DesignSystem.typography.bodyMedium,
-    color: '#B5B5B5',
+    color: DesignSystem.colors.textMuted,
     marginBottom: DesignSystem.spacing.xl,
   },
   inputGroup: {
@@ -227,7 +225,7 @@ const styles = StyleSheet.create({
     color: DesignSystem.colors.onSurface,
     ...DesignSystem.typography.bodyLarge,
     borderWidth: 1,
-    borderColor: '#C1C1C1',
+    borderColor: DesignSystem.colors.border,
   },
   passwordInputContainer: {
     flexDirection: 'row',
@@ -238,7 +236,7 @@ const styles = StyleSheet.create({
     borderRadius: DesignSystem.radius.sm,
     paddingHorizontal: DesignSystem.spacing.md,
     borderWidth: 1,
-    borderColor: '#C1C1C1',
+    borderColor: DesignSystem.colors.border,
   },
   passwordInput: {
     flex: 1,
@@ -289,10 +287,10 @@ const styles = StyleSheet.create({
   orLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#121212',
+    backgroundColor: DesignSystem.colors.border,
   },
   orText: {
-    color: '#ACACAC',
+    color: DesignSystem.colors.textMuted,
     paddingHorizontal: 10,
     fontSize: 14,
     fontFamily: 'Josefin Sans',
@@ -306,18 +304,17 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'white',
+    backgroundColor: DesignSystem.colors.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
   socialText: {
-    color: 'black',
+    color: DesignSystem.colors.onSurface,
     ...DesignSystem.typography.titleMedium,
   },
   loginLinkText: {
-    color: '#999999',
+    color: DesignSystem.colors.textMuted,
     ...DesignSystem.typography.labelLarge,
-    fontSize: 12,
     marginTop: DesignSystem.spacing.xl,
   },
   linkTextAction: {

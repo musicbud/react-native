@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, Dimensions, ScrollView, TouchableOpacity, FlatList, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, ScrollView, TouchableOpacity, FlatList, ActivityIndicator, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useGetEventDetailsV1EventsEventIdGetQuery } from '../store/api';
+import { DesignSystem } from '../theme/design_system';
 
 const { width, height } = Dimensions.get('window');
 
@@ -21,7 +22,7 @@ const EventScreen = () => {
   if (isEventLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#1E90FF" />
+        <ActivityIndicator size="large" color={DesignSystem.colors.primary} />
         <Text style={styles.loadingText}>Loading Event Details...</Text>
       </View>
     );
@@ -155,7 +156,7 @@ const EventScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
   },
   fullBackgroundImage: {
     width: width,
@@ -172,10 +173,10 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
   },
   loadingText: {
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 18,
     marginTop: 10,
   },
@@ -183,11 +184,11 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
     padding: 20,
   },
   errorText: {
-    color: 'red',
+    color: DesignSystem.colors.errorRed,
     fontSize: 18,
     textAlign: 'center',
     marginBottom: 10,
@@ -199,12 +200,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   backButtonText: {
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 24,
     fontWeight: 'bold',
   },
   screenTitle: {
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 20,
     fontWeight: 'bold',
   },
@@ -212,14 +213,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   headerIcon: {
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 20,
     marginLeft: 15,
   },
   eventBanner: {
     width: '100%',
     height: 180, // Example height for the banner area
-    backgroundColor: '#333',
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
     borderRadius: 10,
     justifyContent: 'flex-end',
     padding: 15,
@@ -233,24 +234,24 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   eventBannerDate: {
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 32,
     fontWeight: 'bold',
     zIndex: 1,
   },
   eventDetailsContainer: {
-    backgroundColor: 'rgba(30,30,30,0.8)',
+    backgroundColor: DesignSystem.colors.surfaceContainer,
     borderRadius: 10,
     padding: 15,
   },
   eventTitle: {
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 5,
   },
   eventDescription: {
-    color: '#CCC',
+    color: DesignSystem.colors.textSecondary,
     fontSize: 14,
     marginBottom: 20,
   },
@@ -259,7 +260,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     marginBottom: 20,
     borderBottomWidth: 1,
-    borderBottomColor: '#555',
+    borderBottomColor: DesignSystem.colors.borderColor,
   },
   tabButton: {
     paddingVertical: 10,
@@ -267,10 +268,10 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderColor: '#1E90FF',
+    borderColor: DesignSystem.colors.primary,
   },
   tabButtonText: {
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -278,13 +279,13 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
   },
   detailLabel: {
-    color: '#1E90FF',
+    color: DesignSystem.colors.primary,
     fontSize: 14,
     fontWeight: 'bold',
     marginTop: 10,
   },
   detailText: {
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 16,
     marginBottom: 5,
   },
@@ -307,11 +308,11 @@ const styles = StyleSheet.create({
     height: 55,
     borderRadius: 27.5,
     borderWidth: 2,
-    borderColor: '#1E90FF',
+    borderColor: DesignSystem.colors.primary,
     marginBottom: 5,
   },
   attendeeName: {
-    color: 'white',
+    color: DesignSystem.colors.textPrimary,
     fontSize: 12,
     textAlign: 'center',
   },

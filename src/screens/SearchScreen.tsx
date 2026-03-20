@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
 import {
-  View, Text, StyleSheet, Image, TouchableOpacity, TextInput,
+  View, Text, StyleSheet, TouchableOpacity, TextInput,
   FlatList, ActivityIndicator, SafeAreaView, StatusBar,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';

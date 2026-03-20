@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { SafeImage } from '../components/common/SafeImage';
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, TouchableOpacity, TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
+import { DesignSystem } from '../theme/design_system';
 
 const { width, height } = Dimensions.get('window');
 
@@ -17,7 +18,7 @@ const CollectInfoScreen = () => {
   return (
     <View style={styles.container}>
       <SafeImage
-        source={{/* require('../../assets/ui/extra/Collect information.png') */}}
+        source={{/* require('../../assets/ui/extra/Collect information.png') */ }}
         style={styles.backgroundImage}
         resizeMode="cover"
       />
@@ -36,7 +37,7 @@ const CollectInfoScreen = () => {
         <TextInput
           style={styles.input}
           placeholder="Enter your first name"
-          placeholderTextColor="#888"
+          placeholderTextColor={DesignSystem.colors.textMuted}
           value={firstName}
           onChangeText={setFirstName}
           autoCapitalize="words"
@@ -59,7 +60,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: DesignSystem.colors.backgroundPrimary,
   },
   backgroundImage: {
     width: width,
@@ -68,7 +69,7 @@ const styles = StyleSheet.create({
     opacity: 0.7,
   },
   overlay: {
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: DesignSystem.colors.overlay,
     ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
@@ -88,7 +89,7 @@ const styles = StyleSheet.create({
   progressBarContainer: {
     width: '90%',
     height: 6,
-    backgroundColor: '#333',
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
     borderRadius: 3,
     marginTop: 100, // Adjust positioning
     marginBottom: 50,
@@ -96,7 +97,7 @@ const styles = StyleSheet.create({
   progressBarFill: {
     width: '25%', // Assuming this is the first step out of four, adjust as needed
     height: '100%',
-    backgroundColor: '#1E90FF', // Example progress color
+    backgroundColor: DesignSystem.colors.primary, // Example progress color
     borderRadius: 3,
   },
   title: {
@@ -109,7 +110,7 @@ const styles = StyleSheet.create({
   input: {
     width: '90%',
     height: 50,
-    backgroundColor: '#333',
+    backgroundColor: DesignSystem.colors.surfaceContainerHighest,
     borderRadius: 10,
     paddingHorizontal: 15,
     color: 'white',
@@ -120,7 +121,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#1E90FF',
+    backgroundColor: DesignSystem.colors.primary,
     width: '90%',
     paddingVertical: 15,
     borderRadius: 10,
@@ -138,7 +139,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   hintText: {
-    color: '#888',
+    color: DesignSystem.colors.textMuted,
     fontSize: 14,
     marginTop: 20,
     textAlign: 'center',

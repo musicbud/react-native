@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AudioVisualizer } from './AudioVisualizer';
+import { DesignSystem } from '../../theme/design_system';
 
 export const MiniPlayer = () => {
     const { currentTrack, isPlaying, pauseTrack, resumeTrack } = usePlayer();
@@ -30,7 +31,7 @@ export const MiniPlayer = () => {
             className="absolute bottom-[90px] left-2 right-2 rounded-2xl overflow-hidden border border-surface-border shadow-2xl"
         >
             <LinearGradient
-                colors={['rgba(34, 37, 42, 0.95)', 'rgba(24, 26, 32, 0.95)']}
+                colors={[DesignSystem.colors.surfaceContainerHigh + 'F2', DesignSystem.colors.surfaceContainer + 'F2']}
                 className="flex-row items-center py-2 px-3 backdrop-blur-xl"
             >
                 {/* Track Cover */}
@@ -58,7 +59,7 @@ export const MiniPlayer = () => {
                         <Ionicons
                             name={isPlaying ? 'pause' : 'play'}
                             size={24}
-                            color="#F8FAFC"
+                            color={DesignSystem.colors.textPrimary}
                             className={isPlaying ? "" : "ml-1"}
                         />
                     </TouchableOpacity>
